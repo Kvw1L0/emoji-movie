@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/SocketContext';
-import { Check, Flame } from 'lucide-react';
+import { Check, Flame, Edit2 } from 'lucide-react';
 
 const AVATARS = ['🍿', '🎬', '⭐', '🕶️', '🚀', '🦁', '🦖', '👑', '🧙‍♂️', '👻', '🎸', '⚡'];
 
@@ -16,30 +16,29 @@ export const PlayerView = () => {
 
   const [nicknameInput, setNicknameInput] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('🍿');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentQ = gameState.currentQuestion;
 
-  const handleJoin = (e) => {
+  const handleJoin = async (e) => {
     e.preventDefault();
-    if (!nicknameInput.trim()) return;
-    joinGame(nicknameInput.trim(), selectedAvatar);
-  };
-
-  const handleOptionClick = (option) => {
-    if (gameState.status !== 'QUESTION') return;
-    if (selectedOption === option) {
-      deselectOption();
-    } else {
-      selectOption(option);
+    if (!nicknameInput.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await joinGame(nicknameInput.trim(), selectedAvatar);
+      setIsEditingProfile(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // 1. JOIN FORM
-  if (!player) {
+  // 1. JOIN FORM (First time or when editing profile)
+  if (!player || isEditingProfile) {
     return (
       <div className="min-h-[calc(100vh-50px)] flex items-center justify-center p-4">
         <div className="w-full max-w-sm bg-[#131722]/95 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl text-center">
-          <div className="text-4xl mb-2">🍿</div>
+          <div className="text-4xl mb-2">{selectedAvatar}</div>
 
           <h2 className="text-2xl font-black text-white font-display mb-4">
             EMOJI MOVIE
@@ -72,17 +71,28 @@ export const PlayerView = () => {
                 maxLength={18}
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
-                placeholder="Tu apodo o nombre"
+                placeholder={player?.nickname || "Tu apodo o nombre"}
                 className="w-full px-4 py-3 bg-black/60 border border-white/15 rounded-xl text-white placeholder-gray-500 font-bold text-sm focus:outline-none focus:border-yellow-400 transition"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-300 text-black font-black text-base shadow-lg shadow-yellow-400/25 hover:opacity-95 active:scale-98 transition"
+              disabled={isSubmitting}
+              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-300 text-black font-black text-base shadow-lg shadow-yellow-400/25 hover:opacity-95 active:scale-98 transition disabled:opacity-50"
             >
-              ¡Entrar a Jugar!
+              {isSubmitting ? 'Entrando...' : (player ? 'Guardar Cambios' : '¡Entrar a Jugar!')}
             </button>
+
+            {player && (
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="w-full py-2 text-xs text-gray-400 hover:text-white"
+              >
+                Cancelar
+              </button>
+            )}
           </form>
         </div>
       </div>
@@ -95,13 +105,26 @@ export const PlayerView = () => {
       <div className="flex items-center gap-2">
         <span className="text-2xl">{player.avatar}</span>
         <div>
-          <div className="text-sm font-black text-white leading-tight">
-            {player.nickname}
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-black text-white leading-tight">
+              {player.nickname}
+            </span>
+            <button
+              onClick={() => {
+                setNicknameInput(player.nickname);
+                setSelectedAvatar(player.avatar);
+                setIsEditingProfile(true);
+              }}
+              className="text-gray-400 hover:text-white p-0.5"
+              title="Cambiar apodo o avatar"
+            >
+              <Edit2 className="w-3 h-3" />
+            </button>
           </div>
           <div className="text-[11px] text-gray-400">
             {gameState.allPlayers?.findIndex(p => p.id === player.id) + 1 ? (
               <span>#{gameState.allPlayers.findIndex(p => p.id === player.id) + 1} en el ranking</span>
-            ) : 'Jugador'}
+            ) : 'Conectado'}
           </div>
         </div>
       </div>
@@ -179,7 +202,13 @@ export const PlayerView = () => {
             return (
               <button
                 key={opt}
-                onClick={() => handleOptionClick(opt)}
+                onClick={() => {
+                  if (isSelected) {
+                    deselectOption();
+                  } else {
+                    selectOption(opt);
+                  }
+                }}
                 className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all active:scale-98 ${
                   isSelected
                     ? 'bg-gradient-to-r from-yellow-400 to-amber-300 text-black border-white shadow-xl shadow-yellow-400/30 font-black scale-102 ring-2 ring-yellow-300'

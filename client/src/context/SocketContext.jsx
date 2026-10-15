@@ -1,17 +1,18 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { io } from 'socket.io-client';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { soundEngine } from '../utils/soundSynthesizer';
+import { isFirebaseConfigured } from '../lib/firebase';
+import { firebaseEmojiEngine } from '../lib/firebaseEmojiEngine';
+import { DEFAULT_MOVIES } from '../data/moviesData';
 
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
   const [gameState, setGameState] = useState({
     status: 'LOBBY',
     currentIndex: 0,
-    totalQuestions: 0,
-    currentQuestion: null,
+    totalQuestions: DEFAULT_MOVIES.length,
+    currentQuestion: DEFAULT_MOVIES[0],
     timerDuration: 20,
     timeRemaining: 20,
     isTimerRunning: false,
@@ -22,7 +23,7 @@ export const SocketProvider = ({ children }) => {
     voteDistribution: {},
     leaderboard: [],
     allPlayers: [],
-    questionsList: []
+    questionsList: DEFAULT_MOVIES
   });
 
   const [player, setPlayer] = useState(() => {
@@ -37,133 +38,240 @@ export const SocketProvider = ({ children }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [networkInfo, setNetworkInfo] = useState({
     localIp: typeof window !== 'undefined' ? window.location.hostname : 'localhost',
-    serverPort: 3001
+    serverPort: 5173
   });
   const [isMuted, setIsMuted] = useState(false);
 
+  const timerRef = useRef(null);
+
+  // Initialize and listen to Firebase Realtime Engine
   useEffect(() => {
-    // Determine backend server host
-    const host = window.location.hostname;
-    // Connect to port 3001 if on dev or localhost, otherwise window origin
-    const serverUrl = window.location.port === '5173'
-      ? `http://${host}:3001`
-      : window.location.origin;
+    if (isFirebaseConfigured()) {
+      firebaseEmojiEngine.initGame();
 
-    const newSocket = io(serverUrl, {
-      transports: ['websocket', 'polling'],
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000
-    });
+      // 1. Global state listener
+      const unsubState = firebaseEmojiEngine.onStateChange((state) => {
+        if (state) {
+          setGameState(prev => {
+            // Trigger sound on status change
+            if (prev.status !== state.status) {
+              if (state.status === 'QUESTION') soundEngine.play('question_start');
+              if (state.status === 'REVEAL') soundEngine.play('reveal_answer');
+              if (state.status === 'RANKING') soundEngine.play('ranking_drum');
+              if (state.status === 'PODIUM') soundEngine.play('victory_fanfare');
+            }
+            if (state.activeHintLevel > prev.activeHintLevel) {
+              soundEngine.play('hint_popup');
+            }
+            if (state.doublePoints !== prev.doublePoints) {
+              soundEngine.play('double_on');
+            }
 
-    setSocket(newSocket);
+            return {
+              ...prev,
+              ...state,
+              currentQuestion: state.currentQuestion || DEFAULT_MOVIES[state.currentIndex || 0],
+              voteDistribution: state.voteDistribution || {}
+            };
+          });
+        }
+      });
 
-    newSocket.on('connect', () => {
-      console.log('⚡ Conectado al servidor Emoji Movie');
+      // 2. Players listener
+      const unsubPlayers = firebaseEmojiEngine.onPlayersChange((players) => {
+        const sorted = [...players].sort((a, b) => (b.score || 0) - (a.score || 0));
+        setGameState(prev => ({
+          ...prev,
+          totalPlayers: players.length,
+          allPlayers: sorted,
+          leaderboard: sorted.slice(0, 10)
+        }));
+
+        // Update current player instance if exists
+        if (player?.id) {
+          const current = players.find(p => p.id === player.id);
+          if (current) {
+            setPlayer(prev => ({ ...prev, ...current }));
+          }
+        }
+      });
+
+      // 3. Answers listener
+      const unsubAnswers = firebaseEmojiEngine.onAnswersChange((answers) => {
+        const count = Object.keys(answers).length;
+        setGameState(prev => ({
+          ...prev,
+          answeredCount: count
+        }));
+
+        // Update selected option for current player
+        if (player?.id && answers[player.id]) {
+          setSelectedOption(answers[player.id].option);
+        } else if (player?.id && !answers[player.id] && gameState.status === 'QUESTION') {
+          // If answer was removed
+          setSelectedOption(null);
+        }
+      });
+
       setIsConnected(true);
 
-      // Re-join if player was previously stored
-      if (player && player.nickname) {
-        newSocket.emit('player:join', {
-          nickname: player.nickname,
-          avatar: player.avatar
+      return () => {
+        unsubState();
+        unsubPlayers();
+        unsubAnswers();
+      };
+    }
+  }, [player?.id]);
+
+  // Synchronized Timer Engine
+  useEffect(() => {
+    if (gameState.status === 'QUESTION' && gameState.isTimerRunning) {
+      clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setGameState(prev => {
+          if (!prev.isTimerRunning) return prev;
+          const nextTime = Math.max(0, prev.timeRemaining - 1);
+
+          if (nextTime <= 5 && nextTime > 0) {
+            soundEngine.play('timer_tick');
+          }
+
+          if (nextTime === 0) {
+            clearInterval(timerRef.current);
+            // Auto reveal if timer reaches 0
+            firebaseEmojiEngine.revealAnswer(
+              prev.currentQuestion,
+              prev.doublePoints,
+              prev.timerDuration
+            );
+          }
+
+          // Sync timer every 3 seconds to keep clients in harmony
+          if (nextTime % 3 === 0) {
+            firebaseEmojiEngine.updateTimer(nextTime, true);
+          }
+
+          return { ...prev, timeRemaining: nextTime };
         });
-      }
-    });
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
 
-    newSocket.on('disconnect', () => {
-      console.log('🔌 Desconectado del servidor');
-      setIsConnected(false);
-    });
+    return () => clearInterval(timerRef.current);
+  }, [gameState.status, gameState.isTimerRunning]);
 
-    newSocket.on('game:state', (state) => {
-      setGameState(state);
-    });
-
-    newSocket.on('game:timer_tick', ({ timeRemaining }) => {
-      setGameState(prev => ({ ...prev, timeRemaining }));
-    });
-
-    newSocket.on('player:joined', (playerData) => {
-      setPlayer(playerData);
-      localStorage.setItem('emoji_movie_player', JSON.stringify(playerData));
-    });
-
-    newSocket.on('player:selection_confirmed', ({ selectedOption: opt }) => {
-      setSelectedOption(opt);
-    });
-
-    newSocket.on('player:kicked', () => {
-      alert('Has sido retirado de la partida por el administrador.');
-      setPlayer(null);
-      setSelectedOption(null);
-      localStorage.removeItem('emoji_movie_player');
-    });
-
-    newSocket.on('network:info', (info) => {
-      if (info && info.localIp) {
-        setNetworkInfo(info);
-      }
-    });
-
-    newSocket.on('sound:play', ({ sound }) => {
-      soundEngine.play(sound);
-    });
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
-
-  // When question changes, reset selectedOption if question moved
+  // Reset selected option when question advances
   useEffect(() => {
     if (gameState.status === 'QUESTION') {
       setSelectedOption(null);
     }
   }, [gameState.currentIndex, gameState.status]);
 
-  // Keep player score updated from gameState.allPlayers
-  useEffect(() => {
-    if (socket && player && gameState.allPlayers) {
-      const updated = gameState.allPlayers.find(p => p.id === socket.id);
-      if (updated) {
-        setPlayer(prev => ({ ...prev, ...updated }));
-      }
-    }
-  }, [gameState.allPlayers, socket]);
-
   // --- ACTIONS ---
-  const joinGame = useCallback((nickname, avatar) => {
-    if (!socket) return;
-    socket.emit('player:join', { nickname, avatar });
-  }, [socket]);
+  const joinGame = useCallback(async (nickname, avatar) => {
+    const cleanNick = (nickname || 'Jugador').trim().slice(0, 18);
+    let playerId = player?.id;
+    if (!playerId) {
+      playerId = `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    }
 
-  const selectOption = useCallback((option) => {
-    if (!socket) return;
+    const newPlayerData = {
+      id: playerId,
+      nickname: cleanNick,
+      avatar: avatar || '🍿',
+      score: player?.score || 0,
+      streak: player?.streak || 0,
+      lastAnswer: null,
+      isConnected: true
+    };
+
+    setPlayer(newPlayerData);
+    localStorage.setItem('emoji_movie_player', JSON.stringify(newPlayerData));
+
+    try {
+      await firebaseEmojiEngine.joinPlayer(newPlayerData);
+    } catch (e) {
+      console.warn('Firebase join note:', e);
+    }
+  }, [player]);
+
+  const selectOption = useCallback(async (option) => {
+    if (!player?.id || gameState.status !== 'QUESTION') return;
     soundEngine.play('click');
-    socket.emit('player:select_option', { option });
-  }, [socket]);
+    setSelectedOption(option);
 
-  const deselectOption = useCallback(() => {
-    if (!socket) return;
+    const timeTaken = Math.max(1, (gameState.timerDuration - gameState.timeRemaining));
+    await firebaseEmojiEngine.selectOption(player.id, option, timeTaken);
+  }, [player, gameState.status, gameState.timerDuration, gameState.timeRemaining]);
+
+  const deselectOption = useCallback(async () => {
+    if (!player?.id || gameState.status !== 'QUESTION') return;
     soundEngine.play('click');
-    socket.emit('player:deselect_option');
-  }, [socket]);
+    setSelectedOption(null);
+    await firebaseEmojiEngine.deselectOption(player.id);
+  }, [player, gameState.status]);
 
-  // Admin actions
-  const startLobby = useCallback(() => socket?.emit('admin:start_lobby'), [socket]);
-  const startQuestion = useCallback((index) => socket?.emit('admin:start_question', { index }), [socket]);
-  const toggleTimer = useCallback(() => socket?.emit('admin:toggle_timer'), [socket]);
-  const revealAnswer = useCallback(() => socket?.emit('admin:reveal_answer'), [socket]);
-  const showRanking = useCallback(() => socket?.emit('admin:show_ranking'), [socket]);
-  const showPodium = useCallback(() => socket?.emit('admin:show_podium'), [socket]);
-  const nextQuestion = useCallback(() => socket?.emit('admin:next_question'), [socket]);
-  const prevQuestion = useCallback(() => socket?.emit('admin:prev_question'), [socket]);
-  const showHint = useCallback(() => socket?.emit('admin:show_hint'), [socket]);
-  const toggleDoublePoints = useCallback(() => socket?.emit('admin:toggle_double_points'), [socket]);
-  const setTimerDuration = useCallback((seconds) => socket?.emit('admin:set_timer_duration', { seconds }), [socket]);
-  const kickPlayer = useCallback((playerId) => socket?.emit('admin:kick_player', { playerId }), [socket]);
-  const addCustomQuestion = useCallback((q) => socket?.emit('admin:add_custom_question', q), [socket]);
-  const resetGame = useCallback(() => socket?.emit('admin:reset_game'), [socket]);
+  // Admin Actions
+  const startLobby = useCallback(() => firebaseEmojiEngine.startLobby(), []);
+  
+  const startQuestion = useCallback((index) => {
+    const idx = index !== undefined ? index : gameState.currentIndex;
+    firebaseEmojiEngine.startQuestion(idx, gameState.timerDuration);
+  }, [gameState.currentIndex, gameState.timerDuration]);
+
+  const toggleTimer = useCallback(() => {
+    firebaseEmojiEngine.toggleTimer(gameState.isTimerRunning);
+  }, [gameState.isTimerRunning]);
+
+  const revealAnswer = useCallback(() => {
+    firebaseEmojiEngine.revealAnswer(
+      gameState.currentQuestion,
+      gameState.doublePoints,
+      gameState.timerDuration
+    );
+  }, [gameState.currentQuestion, gameState.doublePoints, gameState.timerDuration]);
+
+  const showRanking = useCallback(() => firebaseEmojiEngine.showRanking(), []);
+  const showPodium = useCallback(() => firebaseEmojiEngine.showPodium(), []);
+
+  const nextQuestion = useCallback(() => {
+    if (gameState.currentIndex + 1 < gameState.totalQuestions) {
+      firebaseEmojiEngine.startQuestion(gameState.currentIndex + 1, gameState.timerDuration);
+    } else {
+      firebaseEmojiEngine.showPodium();
+    }
+  }, [gameState.currentIndex, gameState.totalQuestions, gameState.timerDuration]);
+
+  const prevQuestion = useCallback(() => {
+    if (gameState.currentIndex > 0) {
+      firebaseEmojiEngine.startQuestion(gameState.currentIndex - 1, gameState.timerDuration);
+    }
+  }, [gameState.currentIndex, gameState.timerDuration]);
+
+  const showHint = useCallback(() => {
+    firebaseEmojiEngine.showHint(gameState.activeHintLevel);
+  }, [gameState.activeHintLevel]);
+
+  const toggleDoublePoints = useCallback(() => {
+    firebaseEmojiEngine.toggleDoublePoints(gameState.doublePoints);
+  }, [gameState.doublePoints]);
+
+  const setTimerDuration = useCallback((sec) => {
+    firebaseEmojiEngine.setTimerDuration(sec);
+  }, []);
+
+  const kickPlayer = useCallback((pId) => {
+    firebaseEmojiEngine.kickPlayer(pId);
+  }, []);
+
+  const addCustomQuestion = useCallback((q) => {
+    return firebaseEmojiEngine.addCustomQuestion(q);
+  }, []);
+
+  const resetGame = useCallback(() => {
+    firebaseEmojiEngine.resetGame();
+  }, []);
 
   const toggleMute = () => {
     const next = !isMuted;
@@ -174,7 +282,6 @@ export const SocketProvider = ({ children }) => {
   return (
     <SocketContext.Provider
       value={{
-        socket,
         isConnected,
         gameState,
         player,

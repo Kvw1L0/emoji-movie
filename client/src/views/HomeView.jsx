@@ -5,7 +5,11 @@ import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const HomeView = ({ setView }) => {
   const { gameState, networkInfo } = useGame();
-  const playerUrl = `http://${networkInfo.localIp}:${window.location.port === '5173' ? '5173' : window.location.port}/?view=player`;
+  const playerUrl = typeof window !== 'undefined'
+    ? (window.location.hostname.includes('vercel.app') || (!window.location.hostname.includes('localhost') && !window.location.hostname.startsWith('192.168.') && !window.location.hostname.startsWith('10.')))
+      ? `${window.location.origin}/?view=player`
+      : `${window.location.protocol}//${networkInfo.localIp || window.location.hostname}:${window.location.port || '5173'}/?view=player`
+    : '';
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">

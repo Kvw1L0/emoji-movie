@@ -8,7 +8,11 @@ export const TvView = () => {
   const { gameState, networkInfo } = useGame();
   const currentQ = gameState.currentQuestion;
 
-  const joinUrl = `http://${networkInfo.localIp}:${window.location.port === '5173' ? '5173' : window.location.port}/?view=player`;
+  const joinUrl = typeof window !== 'undefined'
+    ? (window.location.hostname.includes('vercel.app') || (!window.location.hostname.includes('localhost') && !window.location.hostname.startsWith('192.168.') && !window.location.hostname.startsWith('10.')))
+      ? `${window.location.origin}/?view=player`
+      : `${window.location.protocol}//${networkInfo.localIp || window.location.hostname}:${window.location.port || '5173'}/?view=player`
+    : '';
 
   // Trigger confetti on Ranking or Podium
   useEffect(() => {
