@@ -238,27 +238,45 @@ export const TvView = () => {
               <img
                 src={currentQ.photoUrl || currentQ.image}
                 alt={currentQ.title}
-                className="max-h-[320px] sm:max-h-[380px] md:max-h-[420px] w-auto object-contain rounded-3xl shadow-2xl border-4 border-white"
+                className="max-h-[280px] sm:max-h-[340px] md:max-h-[380px] w-auto object-contain rounded-3xl shadow-2xl border-4 border-white transition-all"
               />
-              <div className="mt-3 text-3xl sm:text-5xl select-none filter drop-shadow">
-                {currentQ.emojis}
-              </div>
+
+              {/* When revealed, the correct answer name appears directly below the photo, centered */}
+              {showTitle ? (
+                <div className="mt-3 sm:mt-4 animate-dramatic-reveal text-center">
+                  <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#005F6A] font-display tracking-tight drop-shadow-sm">
+                    {currentQ.correctAnswer || currentQ.title}
+                  </h2>
+                  {currentQ.emojis && (
+                    <div className="mt-1 text-xl sm:text-2xl select-none filter drop-shadow opacity-80">
+                      {currentQ.emojis}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Emojis shown while question is active */
+                <div className="mt-3 text-3xl sm:text-5xl select-none filter drop-shadow">
+                  {currentQ.emojis}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="px-8 sm:px-16 py-8 sm:py-12 rounded-3xl bg-[#FAF7F2] border-2 border-[#00A8B5]/30 shadow-inner relative max-w-3xl w-full">
-              {/* Emojis ALWAYS SOLID - NO blur filter */}
-              <div className="text-7xl sm:text-9xl md:text-[10rem] tracking-wider select-none filter drop-shadow-md">
-                {currentQ.emojis}
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="px-8 sm:px-16 py-8 sm:py-12 rounded-3xl bg-[#FAF7F2] border-2 border-[#00A8B5]/30 shadow-inner relative max-w-3xl w-full">
+                {/* Emojis ALWAYS SOLID - NO blur filter */}
+                <div className="text-7xl sm:text-9xl md:text-[10rem] tracking-wider select-none filter drop-shadow-md">
+                  {currentQ.emojis}
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Movie Title: ONLY appears when determined by Administrator (showTvTitle) */}
-          {showTitle && (
-            <div className="mt-4 sm:mt-6 animate-dramatic-reveal text-center">
-              <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-[#005F6A] font-display tracking-tight drop-shadow-sm">
-                {currentQ.correctAnswer || currentQ.title}
-              </h2>
+              {/* Movie Title: Directly below emojis, centered */}
+              {showTitle && (
+                <div className="mt-4 sm:mt-6 animate-dramatic-reveal text-center">
+                  <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-[#005F6A] font-display tracking-tight drop-shadow-sm">
+                    {currentQ.correctAnswer || currentQ.title}
+                  </h2>
+                </div>
+              )}
             </div>
           )}
         </div>
