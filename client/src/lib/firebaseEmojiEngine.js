@@ -57,6 +57,8 @@ export class FirebaseEmojiEngine {
         activeHintLevel: 0,
         showTvOptions: false,
         showTvTitle: false,
+        soundMuted: false,
+        suspenseMode: false,
         voteDistribution: {},
         updatedAt: Date.now()
       });
@@ -131,6 +133,7 @@ export class FirebaseEmojiEngine {
       activeHintLevel: 0,
       showTvOptions: false,
       showTvTitle: false,
+      suspenseMode: false,
       voteDistribution: {},
       updatedAt: Date.now()
     });
@@ -270,6 +273,20 @@ export class FirebaseEmojiEngine {
     if (!this.db) return;
     await update(ref(this.db, 'emoji_movie/state'), {
       showTvTitle: Boolean(show)
+    });
+  }
+
+  async toggleSoundMuted(currentVal) {
+    if (!this.db) return;
+    await update(ref(this.db, 'emoji_movie/state'), {
+      soundMuted: !currentVal
+    });
+  }
+
+  async toggleSuspenseMode(currentVal) {
+    if (!this.db) return;
+    await update(ref(this.db, 'emoji_movie/state'), {
+      suspenseMode: !currentVal
     });
   }
 

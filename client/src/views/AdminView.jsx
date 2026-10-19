@@ -18,7 +18,10 @@ import {
   PlusCircle,
   RotateCcw,
   Sparkles,
-  Tv
+  Tv,
+  Volume2,
+  VolumeX,
+  Zap
 } from 'lucide-react';
 
 export const AdminView = () => {
@@ -35,6 +38,9 @@ export const AdminView = () => {
     showHint,
     toggleDoublePoints,
     toggleTvOptions,
+    toggleTvTitle,
+    toggleSoundMuted,
+    toggleSuspenseMode,
     setTimerDuration,
     kickPlayer,
     addCustomQuestion,
@@ -119,6 +125,19 @@ export const AdminView = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleSoundMuted(gameState.soundMuted)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-sm ${
+                gameState.soundMuted
+                  ? 'bg-red-500/25 border-red-500 text-red-300 ring-2 ring-red-500/40 animate-pulse'
+                  : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30'
+              }`}
+              title={gameState.soundMuted ? 'El audio de todo el sistema está SILENCIADO. Clic para reactivar.' : 'Audio del sistema ACTIVO. Clic para mutear todo.'}
+            >
+              {gameState.soundMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+              <span>{gameState.soundMuted ? '🔇 Audio MUTE' : '🔊 Audio ON'}</span>
+            </button>
+
             <a
               href="/?view=tv"
               target="_blank"
@@ -191,6 +210,13 @@ export const AdminView = () => {
                               : 'bg-white/5 border-white/10 text-gray-400'
                           }`}>
                             {gameState.showTvTitle ? '🎬 Nombre en TV' : '🔒 Nombre Oculto'}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            gameState.suspenseMode
+                              ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 ring-1 ring-amber-500/30'
+                              : 'bg-white/5 border-white/10 text-gray-400'
+                          }`}>
+                            {gameState.suspenseMode ? '⚡ Suspenso Top 2 (ON)' : 'Suspenso OFF'}
                           </span>
                         </div>
                       </div>
@@ -307,7 +333,7 @@ export const AdminView = () => {
               </div>
 
               {/* Navigation & Modifiers */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-1">
                 <button
                   onClick={prevQuestion}
                   disabled={gameState.currentIndex === 0}
@@ -344,6 +370,19 @@ export const AdminView = () => {
                 >
                   <Flame className="w-4 h-4" />
                   <span>{gameState.doublePoints ? 'Puntos x2 (ON)' : 'Puntos x2'}</span>
+                </button>
+
+                <button
+                  onClick={() => toggleSuspenseMode(gameState.suspenseMode)}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition col-span-2 sm:col-span-1 ${
+                    gameState.suspenseMode
+                      ? 'bg-amber-500 text-black border-amber-400 font-black shadow-lg shadow-amber-500/30 ring-2 ring-amber-400'
+                      : 'bg-amber-500/15 border-amber-500/35 text-amber-300 hover:bg-amber-500/25'
+                  }`}
+                  title="Enfoca en TV las 2 opciones más votadas por el público para generar debate y suspenso"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>{gameState.suspenseMode ? 'Quitar Suspenso' : '⚡ Top 2 Votos'}</span>
                 </button>
               </div>
 
@@ -387,8 +426,21 @@ export const AdminView = () => {
             </div>
 
             {/* Sound FX Buttons */}
-            <div className="p-4 rounded-2xl bg-[#132228] border border-[#00A8B5]/20 flex items-center justify-between gap-2">
-              <span className="text-xs uppercase font-extrabold text-[#4FD1C5]">Efectos de Sonido</span>
+            <div className="p-4 rounded-2xl bg-[#132228] border border-[#00A8B5]/20 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase font-extrabold text-[#4FD1C5]">Efectos de Sonido</span>
+                <button
+                  onClick={() => toggleSoundMuted(gameState.soundMuted)}
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                    gameState.soundMuted
+                      ? 'bg-red-500/30 border-red-500 text-red-300'
+                      : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                  }`}
+                >
+                  {gameState.soundMuted ? '🔇 MUTE ACTIVO' : '🔊 AUDIO ACTIVO'}
+                </button>
+              </div>
+
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => soundEngine.play('correct')}
@@ -401,6 +453,20 @@ export const AdminView = () => {
                   className="px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 text-xs font-bold"
                 >
                   ❌ Error
+                </button>
+                <button
+                  onClick={() => soundEngine.play('heartbeat')}
+                  className="px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 text-xs font-bold"
+                  title="Latido cardíaco para momentos de alta tensión"
+                >
+                  💓 Latido
+                </button>
+                <button
+                  onClick={() => soundEngine.play('dramatic_reveal')}
+                  className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#F6DF88] text-xs font-bold"
+                  title="Acorde orquestal de revelación de película"
+                >
+                  🎬 Stinger
                 </button>
                 <button
                   onClick={() => soundEngine.play('ranking_drum')}

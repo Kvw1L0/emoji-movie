@@ -13,6 +13,8 @@ export class GameManager {
     this.doublePoints = false;
     this.showTvOptions = false;
     this.showTvTitle = false;
+    this.soundMuted = false;
+    this.suspenseMode = false;
     this.activeHintLevel = 0; // 0: None, 1: Hint 1, 2: Hint 2
 
     // Players: Map socketId -> player object
@@ -115,6 +117,7 @@ export class GameManager {
     this.status = 'QUESTION';
     this.showTvOptions = false;
     this.showTvTitle = false;
+    this.suspenseMode = false;
     this.activeHintLevel = 0;
     this.currentAnswers.clear();
     this.timeRemaining = this.timerDuration;
@@ -138,6 +141,16 @@ export class GameManager {
 
   toggleTvTitle() {
     this.showTvTitle = !this.showTvTitle;
+    this.broadcastState();
+  }
+
+  toggleSoundMuted() {
+    this.soundMuted = !this.soundMuted;
+    this.broadcastState();
+  }
+
+  toggleSuspenseMode() {
+    this.suspenseMode = !this.suspenseMode;
     this.broadcastState();
   }
 
@@ -359,6 +372,8 @@ export class GameManager {
       doublePoints: this.doublePoints,
       showTvOptions: this.showTvOptions,
       showTvTitle: this.showTvTitle,
+      soundMuted: this.soundMuted,
+      suspenseMode: this.suspenseMode,
       activeHintLevel: this.activeHintLevel,
       answeredCount,
       totalPlayers,

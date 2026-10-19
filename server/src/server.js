@@ -103,6 +103,14 @@ io.on('connection', (socket) => {
     gameManager.toggleTvTitle();
   });
 
+  socket.on('admin:toggle_sound_muted', () => {
+    gameManager.toggleSoundMuted();
+  });
+
+  socket.on('admin:toggle_suspense_mode', () => {
+    gameManager.toggleSuspenseMode();
+  });
+
   socket.on('admin:show_ranking', () => {
     gameManager.showRanking();
   });

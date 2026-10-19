@@ -17,6 +17,10 @@ export const SocketProvider = ({ children }) => {
     timeRemaining: 20,
     isTimerRunning: false,
     doublePoints: false,
+    showTvOptions: false,
+    showTvTitle: false,
+    soundMuted: false,
+    suspenseMode: false,
     activeHintLevel: 0,
     answeredCount: 0,
     totalPlayers: 0,
@@ -65,6 +69,15 @@ export const SocketProvider = ({ children }) => {
             }
             if (state.doublePoints !== prev.doublePoints) {
               soundEngine.play('double_on');
+            }
+            if (state.soundMuted !== undefined) {
+              soundEngine.setMuted(Boolean(state.soundMuted));
+            }
+            if (state.showTvTitle && !prev.showTvTitle) {
+              soundEngine.play('dramatic_reveal');
+            }
+            if (state.suspenseMode && !prev.suspenseMode) {
+              soundEngine.play('ranking_drum');
             }
 
             return {
@@ -133,7 +146,9 @@ export const SocketProvider = ({ children }) => {
           const nextTime = Math.max(0, prev.timeRemaining - 1);
 
           if (nextTime <= 5 && nextTime > 0) {
-            soundEngine.play('timer_tick');
+            soundEngine.play('heartbeat');
+          } else if (nextTime > 5) {
+            soundEngine.play('suspense_pulse');
           }
 
           const isController = typeof window !== 'undefined' && (
@@ -282,6 +297,14 @@ export const SocketProvider = ({ children }) => {
     firebaseEmojiEngine.toggleTvTitle(gameState.showTvTitle);
   }, [gameState.showTvTitle]);
 
+  const toggleSoundMuted = useCallback(() => {
+    firebaseEmojiEngine.toggleSoundMuted(gameState.soundMuted);
+  }, [gameState.soundMuted]);
+
+  const toggleSuspenseMode = useCallback(() => {
+    firebaseEmojiEngine.toggleSuspenseMode(gameState.suspenseMode);
+  }, [gameState.suspenseMode]);
+
   const setTimerDuration = useCallback((sec) => {
     firebaseEmojiEngine.setTimerDuration(sec);
   }, []);
@@ -329,6 +352,8 @@ export const SocketProvider = ({ children }) => {
         toggleDoublePoints,
         toggleTvOptions,
         toggleTvTitle,
+        toggleSoundMuted,
+        toggleSuspenseMode,
         setTimerDuration,
         kickPlayer,
         addCustomQuestion,

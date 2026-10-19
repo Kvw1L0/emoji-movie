@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { useGame } from '../context/SocketContext';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
-import { Clock, Users, Flame, Trophy, Sparkles } from 'lucide-react';
+import { Clock, Users, Flame, Trophy, Sparkles, Zap, Video } from 'lucide-react';
 import { isAnswerCorrect } from '../data/moviesData';
 
 // Slots around the perimeter of the 16:9 canvas for floating lobby players
@@ -35,39 +35,108 @@ export const TvView = () => {
   const { gameState, networkInfo } = useGame();
   const currentQ = gameState.currentQuestion;
 
+  const [chromaMode, setChromaMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('chroma') === 'true';
+  });
+
   const joinUrl = typeof window !== 'undefined'
     ? (window.location.hostname.includes('vercel.app') || (!window.location.hostname.includes('localhost') && !window.location.hostname.startsWith('192.168.') && !window.location.hostname.startsWith('10.')))
       ? `${window.location.origin}/`
       : `${window.location.protocol}//${networkInfo.localIp || window.location.hostname}:${window.location.port || '5173'}/`
     : '';
 
-  // Confetti on Ranking or Podium
+  // Enhanced Televised Confetti & Fireworks on Podium / Ranking
   useEffect(() => {
-    if (gameState.status === 'PODIUM' || gameState.status === 'RANKING') {
+    if (gameState.status === 'PODIUM') {
+      const duration = 7500;
+      const end = Date.now() + duration;
+
+      const interval = setInterval(() => {
+        if (Date.now() > end) {
+          clearInterval(interval);
+          return;
+        }
+        // Fireworks from left and right corners
+        confetti({
+          particleCount: 40,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.75 },
+          colors: ['#00A8B5', '#D4AF37', '#FF6B6B', '#4FD1C5', '#F6DF88']
+        });
+        confetti({
+          particleCount: 40,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1, y: 0.75 },
+          colors: ['#00A8B5', '#D4AF37', '#FF6B6B', '#4FD1C5', '#F6DF88']
+        });
+      }, 700);
+
+      return () => clearInterval(interval);
+    } else if (gameState.status === 'RANKING') {
       confetti({
-        particleCount: 140,
+        particleCount: 120,
         spread: 90,
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
+        colors: ['#00A8B5', '#D4AF37', '#4FD1C5']
       });
     }
   }, [gameState.status]);
 
-  // Common Key Visual Shell
+  // Standout Player Lower-Third calculation
+  const standoutPlayer = useMemo(() => {
+    if (!gameState.allPlayers || gameState.allPlayers.length === 0) return null;
+    const streakPlayer = gameState.allPlayers.find(p => (p.streak || 0) >= 2);
+    if (streakPlayer) {
+      return {
+        badge: '🔥 EN RACHA',
+        text: `${streakPlayer.avatar} ${streakPlayer.nickname} (${streakPlayer.streak} aciertos seguidos)`
+      };
+    }
+    const leader = gameState.allPlayers[0];
+    if (leader && leader.score > 0) {
+      return {
+        badge: '👑 LÍDER ACTUAL',
+        text: `${leader.avatar} ${leader.nickname} (${leader.score.toLocaleString()} pts)`
+      };
+    }
+    return null;
+  }, [gameState.allPlayers]);
+
+  // Common Key Visual Shell (with OBS Chroma Key Support)
   const TvWrapper = ({ children, customClass = '' }) => (
-    <div className={`h-screen w-screen relative overflow-hidden bg-[#FAF7F2] flex items-center justify-center p-3 sm:p-6 font-sans ${customClass}`}>
-      {/* Key visual background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-95"
-        style={{ backgroundImage: `url('/key-visual.png')` }}
-      />
-      
-      {/* Soft atmospheric gradient to ensure legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/30 pointer-events-none" />
+    <div className={`h-screen w-screen relative overflow-hidden flex items-center justify-center p-3 sm:p-6 font-sans ${
+      chromaMode ? 'bg-[#00FF00]' : 'bg-[#FAF7F2]'
+    } ${customClass}`}>
+      {/* Key visual background (hidden in chroma mode for transparency in OBS) */}
+      {!chromaMode && (
+        <>
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-95"
+            style={{ backgroundImage: `url('/key-visual.png')` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/30 pointer-events-none" />
+        </>
+      )}
 
       {/* Main Center Stage Container: fully centered horizontally and vertically */}
-      <div className="relative z-20 w-full max-w-5xl h-[86vh] max-h-[840px] bg-white/95 backdrop-blur-md rounded-3xl border border-[#00A8B5]/25 shadow-[0_25px_60px_rgba(0,95,106,0.15)] p-6 sm:p-8 flex flex-col justify-between my-auto">
+      <div className={`relative z-20 w-full max-w-5xl h-[86vh] max-h-[840px] rounded-3xl border border-[#00A8B5]/25 shadow-[0_25px_60px_rgba(0,95,106,0.15)] p-6 sm:p-8 flex flex-col justify-between my-auto transition-all ${
+        chromaMode ? 'bg-white/98' : 'bg-white/95 backdrop-blur-md'
+      }`}>
         {children}
       </div>
+
+      {/* Discrete Chroma Toggle in Bottom Right for Production Team */}
+      <button
+        onClick={() => setChromaMode(prev => !prev)}
+        className="absolute bottom-2 right-2 z-50 p-1.5 rounded-lg bg-black/20 hover:bg-black/50 text-white/50 hover:text-white text-[10px] flex items-center gap-1 transition"
+        title={chromaMode ? 'Desactivar pantalla verde OBS' : 'Activar pantalla verde OBS (Chroma Key)'}
+      >
+        <Video className="w-3 h-3" />
+        <span className="hidden sm:inline">{chromaMode ? 'Chroma ON' : 'OBS Chroma'}</span>
+      </button>
     </div>
   );
 
@@ -155,17 +224,32 @@ export const TvView = () => {
     const showTitle = isReveal && Boolean(gameState.showTvTitle);
     const totalVotes = Object.values(gameState.voteDistribution || {}).reduce((a, b) => a + b, 0);
 
+    const sortedOptionsByVotes = [...currentQ.options].sort((a, b) => {
+      const vA = gameState.voteDistribution?.[a] || 0;
+      const vB = gameState.voteDistribution?.[b] || 0;
+      return vB - vA;
+    });
+    const top2Options = sortedOptionsByVotes.slice(0, 2);
+
     return (
       <TvWrapper>
-        {/* Top Header: Ultra-Clean (No "Película 2 de 25", No Category, No "Respuesta Revelada") */}
+        {/* Top Header: Ultra-Clean with TV Lower-Third for Standout Player */}
         <div className="w-full flex items-center justify-between min-h-[44px]">
-          {/* Subtle multiplier indicator if active */}
-          <div>
+          <div className="flex items-center gap-2">
             {gameState.doublePoints && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-xl bg-red-100 border border-red-300 text-xs font-black text-red-700 animate-pulse">
                 <Flame className="w-3.5 h-3.5 text-red-600 fill-current" />
                 PUNTOS x2
               </span>
+            )}
+
+            {standoutPlayer && (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-white/95 border border-[#00A8B5]/30 shadow-sm animate-fade-in text-xs font-bold text-[#133842]">
+                <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#00A8B5]/15 text-[#005F6A] border border-[#00A8B5]/30">
+                  {standoutPlayer.badge}
+                </span>
+                <span>{standoutPlayer.text}</span>
+              </div>
             )}
           </div>
 
@@ -226,14 +310,21 @@ export const TvView = () => {
                 const count = gameState.voteDistribution?.[opt] || 0;
                 const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
                 const isCorrect = isReveal && isAnswerCorrect(opt, currentQ);
+                const isSuspense = Boolean(gameState.suspenseMode) && !isReveal;
+                const isTop2 = isSuspense && top2Options.includes(opt);
+                const isDimmed = isSuspense && !top2Options.includes(opt);
 
                 return (
                   <div
                     key={opt}
-                    className={`p-3 rounded-2xl border text-center relative overflow-hidden transition-all duration-300 flex flex-col justify-between min-h-[72px] sm:min-h-[82px] shadow-sm ${
+                    className={`p-3 rounded-2xl border text-center relative overflow-hidden transition-all duration-500 flex flex-col justify-between min-h-[72px] sm:min-h-[82px] shadow-sm ${
                       isCorrect
                         ? 'bg-emerald-50 border-emerald-500 shadow-lg ring-2 ring-emerald-500/40 text-emerald-950 font-black scale-102'
-                        : 'bg-[#FAF7F2] border-[#00A8B5]/20 text-[#133842]'
+                        : isTop2
+                          ? 'bg-amber-50/95 border-amber-400 shadow-xl ring-2 ring-amber-400 text-amber-950 font-black scale-102 animate-pulse'
+                          : isDimmed
+                            ? 'opacity-25 grayscale scale-95 bg-gray-100 border-gray-200 text-gray-400'
+                            : 'bg-[#FAF7F2] border-[#00A8B5]/20 text-[#133842]'
                     }`}
                   >
                     {/* Percent fill bar during reveal */}
@@ -249,10 +340,19 @@ export const TvView = () => {
                     {/* Top Row: Letter badge and percentage */}
                     <div className="relative z-10 flex items-center justify-between w-full mb-1">
                       <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black ${
-                        isCorrect ? 'bg-emerald-600 text-white' : 'bg-[#00A8B5]/20 text-[#005F6A]'
+                        isCorrect
+                          ? 'bg-emerald-600 text-white'
+                          : isTop2
+                            ? 'bg-amber-500 text-black font-extrabold'
+                            : 'bg-[#00A8B5]/20 text-[#005F6A]'
                       }`}>
                         {letters[idx]}
                       </span>
+                      {isTop2 && (
+                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/90 px-1.5 py-0.5 rounded-full border border-amber-400">
+                          ⚡ Top Votos
+                        </span>
+                      )}
                       {isReveal && (
                         <span className="font-mono text-xs font-black text-[#133842]">
                           {percent}%
