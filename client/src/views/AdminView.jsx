@@ -177,13 +177,20 @@ export const AdminView = () => {
                         <div className="text-xs text-[#4FD1C5]">
                           {currentQ.category} • {currentQ.genre}
                         </div>
-                        <div className="mt-1">
+                        <div className="mt-1 flex flex-wrap gap-1.5">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                             gameState.showTvOptions
                               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
                               : 'bg-white/5 border-white/10 text-gray-400'
                           }`}>
-                            {gameState.showTvOptions ? '🟢 Opciones visibles en TV' : '🔒 Opciones ocultas en TV (audiencia ve solo foto)'}
+                            {gameState.showTvOptions ? '🟢 Opciones en TV' : '🔒 Opciones Ocultas'}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            gameState.showTvTitle
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                              : 'bg-white/5 border-white/10 text-gray-400'
+                          }`}>
+                            {gameState.showTvTitle ? '🎬 Nombre en TV' : '🔒 Nombre Oculto'}
                           </span>
                         </div>
                       </div>
@@ -234,7 +241,7 @@ export const AdminView = () => {
 
             {/* Master Control Deck */}
             <div className="p-5 rounded-2xl bg-[#132228] border border-[#00A8B5]/25 shadow-xl space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 <button
                   onClick={() => startQuestion()}
                   className="p-3 rounded-xl bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-lg shadow-[#00A8B5]/20 active:scale-95 transition"
@@ -271,9 +278,23 @@ export const AdminView = () => {
                 <button
                   onClick={revealAnswer}
                   className="p-3 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F6DF88] hover:bg-[#D4AF37]/30 font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition"
+                  title="Muestra las votaciones y aciertos"
                 >
                   <Sparkles className="w-5 h-5" />
-                  <span>Revelar en TV</span>
+                  <span>Revelar Votos</span>
+                </button>
+
+                <button
+                  onClick={toggleTvTitle}
+                  className={`p-3 rounded-xl border font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition ${
+                    gameState.showTvTitle
+                      ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400'
+                      : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30'
+                  }`}
+                  title="Revela u oculta el nombre oficial de la película en la pantalla de TV"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>{gameState.showTvTitle ? 'Ocultar Título TV' : '🎬 Revelar Nombre'}</span>
                 </button>
 
                 <button

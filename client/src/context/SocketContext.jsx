@@ -278,6 +278,10 @@ export const SocketProvider = ({ children }) => {
     firebaseEmojiEngine.toggleTvOptions(gameState.showTvOptions);
   }, [gameState.showTvOptions]);
 
+  const toggleTvTitle = useCallback(() => {
+    firebaseEmojiEngine.toggleTvTitle(gameState.showTvTitle);
+  }, [gameState.showTvTitle]);
+
   const setTimerDuration = useCallback((sec) => {
     firebaseEmojiEngine.setTimerDuration(sec);
   }, []);
@@ -324,6 +328,7 @@ export const SocketProvider = ({ children }) => {
         showHint,
         toggleDoublePoints,
         toggleTvOptions,
+        toggleTvTitle,
         setTimerDuration,
         kickPlayer,
         addCustomQuestion,

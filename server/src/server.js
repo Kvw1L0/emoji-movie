@@ -95,6 +95,14 @@ io.on('connection', (socket) => {
     gameManager.revealAnswer();
   });
 
+  socket.on('admin:toggle_tv_options', () => {
+    gameManager.toggleTvOptions();
+  });
+
+  socket.on('admin:toggle_tv_title', () => {
+    gameManager.toggleTvTitle();
+  });
+
   socket.on('admin:show_ranking', () => {
     gameManager.showRanking();
   });

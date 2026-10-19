@@ -56,6 +56,7 @@ export class FirebaseEmojiEngine {
         doublePoints: false,
         activeHintLevel: 0,
         showTvOptions: false,
+        showTvTitle: false,
         voteDistribution: {},
         updatedAt: Date.now()
       });
@@ -129,6 +130,7 @@ export class FirebaseEmojiEngine {
       isTimerRunning: true,
       activeHintLevel: 0,
       showTvOptions: false,
+      showTvTitle: false,
       voteDistribution: {},
       updatedAt: Date.now()
     });
@@ -207,11 +209,12 @@ export class FirebaseEmojiEngine {
       await update(ref(this.db), playerUpdates);
     }
 
-    // Update state to REVEAL
+    // Update state to REVEAL (Title is NOT revealed immediately - only when admin determines it)
     await update(ref(this.db, 'emoji_movie/state'), {
       status: 'REVEAL',
       isTimerRunning: false,
       showTvOptions: true,
+      showTvTitle: false,
       voteDistribution: distribution,
       updatedAt: Date.now()
     });
@@ -253,6 +256,20 @@ export class FirebaseEmojiEngine {
     if (!this.db) return;
     await update(ref(this.db, 'emoji_movie/state'), {
       showTvOptions: !currentVal
+    });
+  }
+
+  async toggleTvTitle(currentVal) {
+    if (!this.db) return;
+    await update(ref(this.db, 'emoji_movie/state'), {
+      showTvTitle: !currentVal
+    });
+  }
+
+  async setTvTitle(show) {
+    if (!this.db) return;
+    await update(ref(this.db, 'emoji_movie/state'), {
+      showTvTitle: Boolean(show)
     });
   }
 
