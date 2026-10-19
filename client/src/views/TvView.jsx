@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { useGame } from '../context/SocketContext';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
-import { Trophy, Clock, Users, Flame, Sparkles } from 'lucide-react';
+import { Trophy, Clock, Users, Flame } from 'lucide-react';
 
 export const TvView = () => {
   const { gameState, networkInfo } = useGame();
@@ -10,25 +10,25 @@ export const TvView = () => {
 
   const joinUrl = typeof window !== 'undefined'
     ? (window.location.hostname.includes('vercel.app') || (!window.location.hostname.includes('localhost') && !window.location.hostname.startsWith('192.168.') && !window.location.hostname.startsWith('10.')))
-      ? `${window.location.origin}/?view=player`
-      : `${window.location.protocol}//${networkInfo.localIp || window.location.hostname}:${window.location.port || '5173'}/?view=player`
+      ? `${window.location.origin}/`
+      : `${window.location.protocol}//${networkInfo.localIp || window.location.hostname}:${window.location.port || '5173'}/`
     : '';
 
-  // Trigger confetti on Ranking or Podium
+  // Confetti on Ranking or Podium
   useEffect(() => {
     if (gameState.status === 'PODIUM' || gameState.status === 'RANKING') {
       confetti({
-        particleCount: 120,
-        spread: 90,
+        particleCount: 140,
+        spread: 100,
         origin: { y: 0.6 }
       });
     }
   }, [gameState.status]);
 
-  // 1. LOBBY VIEW
+  // 1. LOBBY VIEW (Streaming Broadcast Screen)
   if (gameState.status === 'LOBBY') {
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col items-center justify-between p-6 sm:p-10 relative overflow-hidden bg-gradient-to-b from-[#0f111a] via-[#090b10] to-[#040507]">
+      <div className="h-screen w-screen flex flex-col items-center justify-between p-6 sm:p-10 relative overflow-hidden bg-gradient-to-b from-[#0f111a] via-[#090b10] to-[#040507]">
         {/* Hollywood Lights Backdrop */}
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-yellow-500/10 rounded-full blur-[140px] pointer-events-none" />
 
@@ -37,17 +37,14 @@ export const TvView = () => {
           <h1 className="text-6xl sm:text-8xl font-black tracking-tight text-white font-display drop-shadow-[0_0_40px_rgba(255,215,0,0.35)]">
             EMOJI <span className="bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent">MOVIE</span>
           </h1>
-          <p className="text-gray-400 text-base sm:text-lg mt-2 font-medium">
-            Trivia de Cine de Hollywood
-          </p>
         </div>
 
-        {/* Center: Clean QR Code & Join Link */}
+        {/* Center: Clean QR Code & Join Link for Stream Viewers */}
         <div className="z-10 flex flex-col items-center gap-4 my-auto">
           <QRCodeDisplay url={joinUrl} size={240} showDetails={false} />
 
           <div className="flex flex-col items-center gap-2">
-            <span className="text-sm font-bold text-yellow-400 tracking-wider uppercase">
+            <span className="text-xs sm:text-sm font-black text-yellow-400 tracking-widest uppercase">
               Escanea para entrar desde tu celular
             </span>
             <div className="font-mono text-xs text-gray-300 bg-black/60 px-4 py-1.5 rounded-full border border-white/10 select-all">
@@ -57,10 +54,10 @@ export const TvView = () => {
         </div>
 
         {/* Connected Players Floating Avatars */}
-        <div className="w-full max-w-4xl z-10 pb-4">
+        <div className="w-full max-w-4xl z-10 pb-6">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gray-400 font-bold mb-3">
             <Users className="w-4 h-4 text-yellow-400" />
-            <span>Jugadores Conectados ({gameState.totalPlayers})</span>
+            <span>Jugadores en Sala ({gameState.totalPlayers})</span>
           </div>
 
           <div className="flex flex-wrap justify-center gap-2.5 max-h-28 overflow-y-auto p-1">
@@ -83,18 +80,18 @@ export const TvView = () => {
     );
   }
 
-  // 2. QUESTION IN PROGRESS VIEW
+  // 2. QUESTION IN PROGRESS (Streaming Overlay HUD)
   if (gameState.status === 'QUESTION' && currentQ) {
     const isLowTime = gameState.timeRemaining <= 5;
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-radial from-[#151a2e] to-[#06070a]">
+      <div className="h-screen w-screen flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-radial from-[#151a2e] to-[#06070a]">
         {/* Glow ambient */}
         <div className={`absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] rounded-full blur-[140px] pointer-events-none transition-all duration-500 ${
           isLowTime ? 'bg-red-600/20' : 'bg-yellow-500/10'
         }`} />
 
-        {/* Top Bar: Question #, Category, Double points & Big Timer */}
+        {/* Top HUD: Question #, Category, Double points & Big Timer */}
         <div className="flex items-center justify-between gap-4 z-10 w-full max-w-6xl mx-auto">
           <div className="flex items-center gap-3">
             <span className="px-4 py-1.5 rounded-xl bg-white/10 border border-white/10 text-xs sm:text-sm font-black text-gray-200">
@@ -111,7 +108,7 @@ export const TvView = () => {
             )}
           </div>
 
-          {/* Big Timer Clock */}
+          {/* Countdown Clock */}
           <div className={`flex items-center gap-3 px-5 py-2 rounded-2xl border transition-all ${
             isLowTime
               ? 'bg-red-500/20 border-red-500/60 text-red-400 scale-105 animate-pulse'
@@ -124,7 +121,7 @@ export const TvView = () => {
           </div>
         </div>
 
-        {/* Center: Massive Emojis Display */}
+        {/* Center: Massive Emojis Box */}
         <div className="z-10 flex flex-col items-center justify-center my-auto text-center py-6">
           <div className="px-8 sm:px-20 py-10 sm:py-14 rounded-3xl bg-black/60 border-2 border-yellow-400/40 shadow-[0_0_60px_rgba(255,215,0,0.15)] backdrop-blur-xl relative">
             <div className="text-7xl sm:text-9xl md:text-[10rem] tracking-wider select-none transform hover:scale-102 transition-transform duration-300 filter drop-shadow-2xl">
@@ -132,7 +129,7 @@ export const TvView = () => {
             </div>
           </div>
 
-          {/* Dynamic Hints Bar if unlocked by Admin */}
+          {/* Dynamic Hints Bar if unlocked by Host */}
           {gameState.activeHintLevel > 0 && (
             <div className="mt-6 flex flex-col items-center gap-2 max-w-2xl animate-fade-in">
               {gameState.activeHintLevel >= 1 && (
@@ -151,10 +148,13 @@ export const TvView = () => {
           )}
         </div>
 
-        {/* Bottom Bar: Live Vote Progress */}
+        {/* Bottom Bar: Telemetry Progress */}
         <div className="z-10 w-full max-w-6xl mx-auto pt-4 border-t border-white/10">
           <div className="flex justify-between items-center text-xs text-gray-400 mb-1.5 font-bold">
-            <span>Respuestas</span>
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-yellow-400" />
+              <span>Votos</span>
+            </div>
             <span className="font-mono text-yellow-400">
               {gameState.answeredCount} / {gameState.totalPlayers}
             </span>
@@ -177,7 +177,7 @@ export const TvView = () => {
     const totalVotes = Object.values(gameState.voteDistribution || {}).reduce((a, b) => a + b, 0);
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-gradient-to-b from-[#180e29] via-[#0b0c14] to-[#040507]">
+      <div className="h-screen w-screen flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-gradient-to-b from-[#180e29] via-[#0b0c14] to-[#040507]">
         {/* Top Header */}
         <div className="flex items-center justify-between z-10 w-full max-w-6xl mx-auto">
           <span className="px-4 py-1.5 rounded-xl bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs sm:text-sm font-black">
@@ -270,13 +270,13 @@ export const TvView = () => {
     );
   }
 
-  // 4. RANKING / LEADERBOARD VIEW
+  // 4. PODIUM / RANKING (Pure Broadcast Screen - No Navigation)
   if (gameState.status === 'RANKING' || gameState.status === 'PODIUM') {
     const isFinalPodium = gameState.status === 'PODIUM';
     const topPlayers = gameState.leaderboard || [];
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-radial from-[#1e1708] via-[#0b0c10] to-[#040507]">
+      <div className="h-screen w-screen flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden bg-radial from-[#1e1708] via-[#0b0c10] to-[#040507]">
         {/* Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-yellow-500/15 rounded-full blur-[140px] pointer-events-none" />
 

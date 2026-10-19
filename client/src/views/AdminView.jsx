@@ -18,7 +18,8 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
-  Sparkles
+  Sparkles,
+  Tv
 } from 'lucide-react';
 
 export const AdminView = () => {
@@ -108,12 +109,24 @@ export const AdminView = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <a
+            href="/?view=tv"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 text-xs font-bold transition"
+            title="Abrir la pantalla de streaming en una nueva ventana"
+          >
+            <Tv className="w-4 h-4" />
+            <span className="hidden sm:inline">Abrir TV / Stream ↗</span>
+            <span className="sm:hidden">TV ↗</span>
+          </a>
+
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 text-xs font-bold transition"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>+ Crear Película</span>
+            <span>+ Crear</span>
           </button>
 
           <button
