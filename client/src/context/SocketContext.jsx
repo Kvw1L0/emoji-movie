@@ -100,11 +100,18 @@ export const SocketProvider = ({ children }) => {
           leaderboard: sorted.slice(0, 10)
         }));
 
-        // Update current player instance if exists
+        // Update current player instance if exists; kick if removed/wiped
         if (player?.id) {
           const current = players.find(p => p.id === player.id);
           if (current) {
             setPlayer(prev => ({ ...prev, ...current }));
+          } else {
+            // Player was kicked or session was fully reset
+            setPlayer(null);
+            setSelectedOption(null);
+            try {
+              localStorage.removeItem('emoji_movie_player');
+            } catch {}
           }
         }
       });
@@ -207,6 +214,7 @@ export const SocketProvider = ({ children }) => {
       score: player?.score || 0,
       streak: player?.streak || 0,
       lastAnswer: null,
+      joinedAt: Date.now(),
       isConnected: true
     };
 

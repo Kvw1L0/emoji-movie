@@ -212,11 +212,10 @@ export class FirebaseEmojiEngine {
       await update(ref(this.db), playerUpdates);
     }
 
-    // Update state to REVEAL (Title is NOT revealed immediately - only when admin determines it)
+    // Update state to REVEAL (Title and Options are NOT forced - only when admin determines it)
     await update(ref(this.db, 'emoji_movie/state'), {
       status: 'REVEAL',
       isTimerRunning: false,
-      showTvOptions: true,
       showTvTitle: false,
       voteDistribution: distribution,
       updatedAt: Date.now()
@@ -306,31 +305,27 @@ export class FirebaseEmojiEngine {
 
   async resetGame() {
     if (!this.db) return;
-    const playersSnap = await get(ref(this.db, 'emoji_movie/players'));
-    const players = playersSnap.val() || {};
-
-    const playerResets = {};
-    for (const pId of Object.keys(players)) {
-      playerResets[`emoji_movie/players/${pId}/score`] = 0;
-      playerResets[`emoji_movie/players/${pId}/streak`] = 0;
-      playerResets[`emoji_movie/players/${pId}/lastAnswer`] = null;
-    }
-
-    if (Object.keys(playerResets).length > 0) {
-      await update(ref(this.db), playerResets);
-    }
-
+    
+    // Completely wipe all players and current round answers (full expulsion)
+    await remove(ref(this.db, 'emoji_movie/players'));
     await remove(ref(this.db, 'emoji_movie/answers'));
 
+    const now = Date.now();
     await update(ref(this.db, 'emoji_movie/state'), {
       status: 'LOBBY',
       currentIndex: 0,
       currentQuestion: this.questions[0],
+      timerDuration: 20,
+      timeRemaining: 20,
       isTimerRunning: false,
       doublePoints: false,
+      showTvOptions: false,
+      showTvTitle: false,
+      suspenseMode: false,
       activeHintLevel: 0,
       voteDistribution: {},
-      updatedAt: Date.now()
+      sessionResetAt: now,
+      updatedAt: now
     });
   }
 

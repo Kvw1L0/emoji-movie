@@ -193,7 +193,6 @@ export class GameManager {
   revealAnswer() {
     this.stopTimer();
     this.status = 'REVEAL';
-    this.showTvOptions = true;
     this.showTvTitle = false;
 
     const currentQ = this.getCurrentQuestion();
@@ -318,12 +317,11 @@ export class GameManager {
     this.status = 'LOBBY';
     this.activeHintLevel = 0;
     this.doublePoints = false;
+    this.showTvOptions = false;
+    this.showTvTitle = false;
+    this.suspenseMode = false;
     this.currentAnswers.clear();
-    for (const player of this.players.values()) {
-      player.score = 0;
-      player.streak = 0;
-      player.lastAnswer = null;
-    }
+    this.players.clear();
     this.broadcastState();
   }
 

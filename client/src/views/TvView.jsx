@@ -85,26 +85,6 @@ export const TvView = () => {
     }
   }, [gameState.status]);
 
-  // Standout Player Lower-Third calculation
-  const standoutPlayer = useMemo(() => {
-    if (!gameState.allPlayers || gameState.allPlayers.length === 0) return null;
-    const streakPlayer = gameState.allPlayers.find(p => (p.streak || 0) >= 2);
-    if (streakPlayer) {
-      return {
-        badge: '🔥 EN RACHA',
-        text: `${streakPlayer.avatar} ${streakPlayer.nickname} (${streakPlayer.streak} aciertos seguidos)`
-      };
-    }
-    const leader = gameState.allPlayers[0];
-    if (leader && leader.score > 0) {
-      return {
-        badge: '👑 LÍDER ACTUAL',
-        text: `${leader.avatar} ${leader.nickname} (${leader.score.toLocaleString()} pts)`
-      };
-    }
-    return null;
-  }, [gameState.allPlayers]);
-
   // Common Key Visual Shell (with OBS Chroma Key Support)
   const TvWrapper = ({ children, customClass = '' }) => (
     <div className={`h-screen w-screen relative overflow-hidden flex items-center justify-center p-3 sm:p-6 font-sans ${
@@ -185,11 +165,6 @@ export const TvView = () => {
 
         {/* Center Card with QR Code */}
         <div className="relative z-20 w-full max-w-lg bg-white/95 backdrop-blur-md rounded-3xl border border-[#00A8B5]/25 shadow-[0_25px_60px_rgba(0,95,106,0.18)] p-7 sm:p-8 flex flex-col items-center justify-center text-center my-auto space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00A8B5]/10 border border-[#00A8B5]/30 text-[#005F6A] text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Hogar de Cristo • 82 Años</span>
-          </div>
-
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#133842] font-display">
             EMOJI <span className="text-[#00A8B5]">MOVIE</span>
           </h1>
@@ -198,13 +173,10 @@ export const TvView = () => {
             <QRCodeDisplay url={joinUrl} size={220} showDetails={false} />
           </div>
 
-          <div className="space-y-1">
+          <div className="pt-1">
             <span className="text-xs sm:text-sm font-extrabold text-[#005F6A] uppercase tracking-wider block">
               Escanea para entrar desde tu celular
             </span>
-            <div className="font-mono text-xs text-[#133842] bg-[#FAF7F2] px-4 py-1.5 rounded-full border border-[#00A8B5]/20 inline-block font-bold shadow-inner">
-              {joinUrl}
-            </div>
           </div>
 
           <div className="pt-2 border-t border-[#00A8B5]/15 w-full flex items-center justify-center gap-2 text-xs font-black text-[#005F6A]">
@@ -220,7 +192,7 @@ export const TvView = () => {
   if ((gameState.status === 'QUESTION' || gameState.status === 'REVEAL') && currentQ) {
     const isReveal = gameState.status === 'REVEAL';
     const isLowTime = !isReveal && gameState.timeRemaining <= 5;
-    const showAlternatives = isReveal || Boolean(gameState.showTvOptions);
+    const showAlternatives = Boolean(gameState.showTvOptions);
     const showTitle = isReveal && Boolean(gameState.showTvTitle);
     const totalVotes = Object.values(gameState.voteDistribution || {}).reduce((a, b) => a + b, 0);
 
@@ -233,23 +205,14 @@ export const TvView = () => {
 
     return (
       <TvWrapper>
-        {/* Top Header: Ultra-Clean with TV Lower-Third for Standout Player */}
+        {/* Top Header: Ultra-Clean (Only doublePoints if active, countdown timer on right) */}
         <div className="w-full flex items-center justify-between min-h-[44px]">
-          <div className="flex items-center gap-2">
+          <div>
             {gameState.doublePoints && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-xl bg-red-100 border border-red-300 text-xs font-black text-red-700 animate-pulse">
                 <Flame className="w-3.5 h-3.5 text-red-600 fill-current" />
                 PUNTOS x2
               </span>
-            )}
-
-            {standoutPlayer && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-white/95 border border-[#00A8B5]/30 shadow-sm animate-fade-in text-xs font-bold text-[#133842]">
-                <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#00A8B5]/15 text-[#005F6A] border border-[#00A8B5]/30">
-                  {standoutPlayer.badge}
-                </span>
-                <span>{standoutPlayer.text}</span>
-              </div>
             )}
           </div>
 
@@ -395,7 +358,7 @@ export const TvView = () => {
         <div className="text-center pt-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#8A7016] text-xs font-bold uppercase tracking-wider mb-1">
             <Trophy className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Hogar de Cristo • 82 Años</span>
+            <span>EMOJI MOVIE</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-[#133842] font-display">
             {isFinalPodium ? '🏆 PODIO DE CAMPEONES' : 'CLASIFICACIÓN EN VIVO'}

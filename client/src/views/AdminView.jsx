@@ -91,7 +91,7 @@ export const AdminView = () => {
   };
 
   const handleResetConfirm = () => {
-    if (window.confirm('¿Reiniciar la partida y restablecer puntajes a cero?')) {
+    if (window.confirm('¿Reiniciar o cerrar la sesión completamente? Esto expulsará a todos los jugadores, borrará el ranking y reiniciará el juego a cero desde el Lobby.')) {
       resetGame();
     }
   };
@@ -110,9 +110,6 @@ export const AdminView = () => {
                 <h1 className="text-base sm:text-lg font-black text-white font-display">
                   Panel de Conducción
                 </h1>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#00A8B5]/20 text-[#4FD1C5] px-2 py-0.5 rounded-full border border-[#00A8B5]/40">
-                  82 Años HDC
-                </span>
               </div>
               <div className="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
                 <span className="font-bold text-[#D4AF37]">{gameState.status}</span>
@@ -161,9 +158,10 @@ export const AdminView = () => {
             <button
               onClick={handleResetConfirm}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 text-xs font-bold transition"
+              title="Expulsa a todos los jugadores, borra el ranking y reinicia el juego a cero"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Reiniciar</span>
+              <span>Reiniciar o Cerrar sesión</span>
             </button>
           </div>
         </div>
