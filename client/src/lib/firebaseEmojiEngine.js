@@ -55,6 +55,7 @@ export class FirebaseEmojiEngine {
         isTimerRunning: false,
         doublePoints: false,
         activeHintLevel: 0,
+        showTvOptions: false,
         voteDistribution: {},
         updatedAt: Date.now()
       });
@@ -127,6 +128,7 @@ export class FirebaseEmojiEngine {
       startTime: Date.now(),
       isTimerRunning: true,
       activeHintLevel: 0,
+      showTvOptions: false,
       voteDistribution: {},
       updatedAt: Date.now()
     });
@@ -209,6 +211,7 @@ export class FirebaseEmojiEngine {
     await update(ref(this.db, 'emoji_movie/state'), {
       status: 'REVEAL',
       isTimerRunning: false,
+      showTvOptions: true,
       voteDistribution: distribution,
       updatedAt: Date.now()
     });
@@ -243,6 +246,13 @@ export class FirebaseEmojiEngine {
     if (!this.db) return;
     await update(ref(this.db, 'emoji_movie/state'), {
       doublePoints: !currentVal
+    });
+  }
+
+  async toggleTvOptions(currentVal) {
+    if (!this.db) return;
+    await update(ref(this.db, 'emoji_movie/state'), {
+      showTvOptions: !currentVal
     });
   }
 
@@ -295,14 +305,16 @@ export class FirebaseEmojiEngine {
     const questionObj = {
       id: `custom-${Date.now()}`,
       title: q.title.trim(),
-      emojis: q.emojis.trim(),
+      correctAnswer: q.correctAnswer?.trim() || q.title.trim(),
+      emojis: q.emojis?.trim() || '🎬 ⭐ 🍿',
+      photoUrl: q.photoUrl?.trim() || q.image?.trim() || '',
       options: q.options.map(o => o.trim()),
       category: q.category || 'Personalizada',
       year: q.year || new Date().getFullYear(),
       director: q.director || 'Desconocido',
-      genre: q.genre || 'Cine',
-      hint1: q.hint1 || 'Película agregada por el Administrador',
-      hint2: q.hint2 || '¡Mira bien los emoticones!',
+      genre: q.genre || 'Cine / Especial',
+      hint1: q.hint1 || 'Pregunta agregada por el Administrador',
+      hint2: q.hint2 || '¡Mira bien los detalles en pantalla!',
       trivia: q.trivia || 'Pregunta creada en vivo.'
     };
     this.questions.push(questionObj);

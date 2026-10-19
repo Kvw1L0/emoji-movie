@@ -210,9 +210,17 @@ export const SocketProvider = ({ children }) => {
     soundEngine.play('click');
     setSelectedOption(option);
 
-    const timeTaken = Math.max(1, (gameState.timerDuration - gameState.timeRemaining));
+    const timerDuration = gameState.timerDuration || 20;
+    let timeTaken = 1;
+    if (gameState.startTime) {
+      const elapsed = (Date.now() - gameState.startTime) / 1000;
+      timeTaken = Math.min(timerDuration, Math.max(0.2, elapsed));
+    } else {
+      timeTaken = Math.min(timerDuration, Math.max(0.2, timerDuration - (gameState.timeRemaining || 0)));
+    }
+
     await firebaseEmojiEngine.selectOption(player.id, option, timeTaken);
-  }, [player, gameState.status, gameState.timerDuration, gameState.timeRemaining]);
+  }, [player, gameState.status, gameState.timerDuration, gameState.timeRemaining, gameState.startTime]);
 
   const deselectOption = useCallback(async () => {
     if (!player?.id || gameState.status !== 'QUESTION') return;
@@ -266,6 +274,10 @@ export const SocketProvider = ({ children }) => {
     firebaseEmojiEngine.toggleDoublePoints(gameState.doublePoints);
   }, [gameState.doublePoints]);
 
+  const toggleTvOptions = useCallback(() => {
+    firebaseEmojiEngine.toggleTvOptions(gameState.showTvOptions);
+  }, [gameState.showTvOptions]);
+
   const setTimerDuration = useCallback((sec) => {
     firebaseEmojiEngine.setTimerDuration(sec);
   }, []);
@@ -311,6 +323,7 @@ export const SocketProvider = ({ children }) => {
         prevQuestion,
         showHint,
         toggleDoublePoints,
+        toggleTvOptions,
         setTimerDuration,
         kickPlayer,
         addCustomQuestion,

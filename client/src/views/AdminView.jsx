@@ -34,6 +34,7 @@ export const AdminView = () => {
     prevQuestion,
     showHint,
     toggleDoublePoints,
+    toggleTvOptions,
     setTimerDuration,
     kickPlayer,
     addCustomQuestion,
@@ -43,6 +44,7 @@ export const AdminView = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [customTitle, setCustomTitle] = useState('');
   const [customEmojis, setCustomEmojis] = useState('');
+  const [customPhotoUrl, setCustomPhotoUrl] = useState('');
   const [customOptions, setCustomOptions] = useState(['', '', '', '']);
   const [customCategory, setCustomCategory] = useState('Personalizada');
   const [customHint1, setCustomHint1] = useState('');
@@ -52,8 +54,8 @@ export const AdminView = () => {
 
   const handleAddQuestionSubmit = (e) => {
     e.preventDefault();
-    if (!customTitle || !customEmojis || customOptions.some(o => !o.trim())) {
-      alert('Completa el título, emojis y las 4 opciones.');
+    if (!customTitle || customOptions.some(o => !o.trim())) {
+      alert('Completa el título y las 4 opciones.');
       return;
     }
 
@@ -65,15 +67,17 @@ export const AdminView = () => {
     addCustomQuestion({
       title: customTitle,
       correctAnswer: customTitle,
-      emojis: customEmojis,
+      emojis: customEmojis || '🎬 ⭐ 🍿',
+      photoUrl: customPhotoUrl.trim(),
       options: optionsArray,
       category: customCategory,
       hint1: customHint1 || `Película de ${customCategory}`,
-      hint2: customHint2 || '¡Mira bien los emoticones!'
+      hint2: customHint2 || '¡Mira bien los detalles en pantalla!'
     });
 
     setCustomTitle('');
     setCustomEmojis('');
+    setCustomPhotoUrl('');
     setCustomOptions(['', '', '', '']);
     setCustomHint1('');
     setCustomHint2('');
@@ -154,15 +158,34 @@ export const AdminView = () => {
               {currentQ ? (
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-center sm:text-left">
-                      <div className="text-4xl sm:text-5xl select-none mb-1">
-                        {currentQ.emojis}
-                      </div>
-                      <div className="text-lg font-black text-white">
-                        {currentQ.correctAnswer || currentQ.title} <span className="text-xs text-gray-400 font-normal">({currentQ.year})</span>
-                      </div>
-                      <div className="text-xs text-[#4FD1C5]">
-                        {currentQ.category} • {currentQ.genre}
+                    <div className="flex items-center gap-3">
+                      {currentQ.photoUrl || currentQ.image ? (
+                        <img
+                          src={currentQ.photoUrl || currentQ.image}
+                          alt={currentQ.title}
+                          className="w-16 h-16 rounded-xl object-cover border border-[#00A8B5]/40 shrink-0"
+                        />
+                      ) : (
+                        <div className="text-4xl select-none shrink-0">
+                          {currentQ.emojis}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-lg font-black text-white">
+                          {currentQ.correctAnswer || currentQ.title} <span className="text-xs text-gray-400 font-normal">({currentQ.year})</span>
+                        </div>
+                        <div className="text-xs text-[#4FD1C5]">
+                          {currentQ.category} • {currentQ.genre}
+                        </div>
+                        <div className="mt-1">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            gameState.showTvOptions
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                              : 'bg-white/5 border-white/10 text-gray-400'
+                          }`}>
+                            {gameState.showTvOptions ? '🟢 Opciones visibles en TV' : '🔒 Opciones ocultas en TV (audiencia ve solo foto)'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -211,10 +234,10 @@ export const AdminView = () => {
 
             {/* Master Control Deck */}
             <div className="p-5 rounded-2xl bg-[#132228] border border-[#00A8B5]/25 shadow-xl space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 <button
                   onClick={() => startQuestion()}
-                  className="p-3.5 rounded-xl bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white font-black text-sm flex flex-col items-center justify-center gap-1 shadow-lg shadow-[#00A8B5]/20 active:scale-95 transition"
+                  className="p-3 rounded-xl bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-lg shadow-[#00A8B5]/20 active:scale-95 transition"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   <span>Iniciar Pregunta</span>
@@ -222,7 +245,7 @@ export const AdminView = () => {
 
                 <button
                   onClick={toggleTimer}
-                  className={`p-3.5 rounded-xl border font-black text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition ${
+                  className={`p-3 rounded-xl border font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition ${
                     gameState.isTimerRunning
                       ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
                       : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
@@ -233,19 +256,32 @@ export const AdminView = () => {
                 </button>
 
                 <button
-                  onClick={revealAnswer}
-                  className="p-3.5 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F6DF88] hover:bg-[#D4AF37]/30 font-black text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition"
+                  onClick={toggleTvOptions}
+                  className={`p-3 rounded-xl border font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition ${
+                    gameState.showTvOptions
+                      ? 'bg-[#00A8B5] text-white border-[#00A8B5] shadow-lg shadow-[#00A8B5]/30'
+                      : 'bg-[#00A8B5]/20 border-[#00A8B5]/40 text-[#4FD1C5] hover:bg-[#00A8B5]/30'
+                  }`}
+                  title="Muestra u oculta la fila de alternativas en la pantalla gigante"
                 >
                   <Eye className="w-5 h-5" />
+                  <span>{gameState.showTvOptions ? 'Ocultar Opciones' : '📢 Opciones en TV'}</span>
+                </button>
+
+                <button
+                  onClick={revealAnswer}
+                  className="p-3 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F6DF88] hover:bg-[#D4AF37]/30 font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition"
+                >
+                  <Sparkles className="w-5 h-5" />
                   <span>Revelar en TV</span>
                 </button>
 
                 <button
                   onClick={showRanking}
-                  className="p-3.5 rounded-xl bg-[#00A8B5]/20 border border-[#00A8B5]/40 text-[#4FD1C5] hover:bg-[#00A8B5]/30 font-black text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition"
+                  className="p-3 rounded-xl bg-[#00A8B5]/20 border border-[#00A8B5]/40 text-[#4FD1C5] hover:bg-[#00A8B5]/30 font-black text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition"
                 >
                   <Trophy className="w-5 h-5" />
-                  <span>Proyectar Ranking</span>
+                  <span>Ranking</span>
                 </button>
               </div>
 
@@ -467,11 +503,21 @@ export const AdminView = () => {
                   <label className="block font-bold text-gray-300 mb-1">Emojis</label>
                   <input
                     type="text"
-                    required
                     placeholder="Ej: 🐴 🍊 🔫 💼 🌹"
                     value={customEmojis}
                     onChange={(e) => setCustomEmojis(e.target.value)}
                     className="w-full px-3 py-2 bg-black/40 border border-[#00A8B5]/30 rounded-xl text-white text-base focus:outline-none focus:border-[#00A8B5]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-300 mb-1">URL de Foto / Imagen de la Persona o Película (opcional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://ejemplo.com/foto.jpg"
+                    value={customPhotoUrl}
+                    onChange={(e) => setCustomPhotoUrl(e.target.value)}
+                    className="w-full px-3 py-2 bg-black/40 border border-[#00A8B5]/30 rounded-xl text-white focus:outline-none focus:border-[#00A8B5]"
                   />
                 </div>
 

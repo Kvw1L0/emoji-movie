@@ -185,11 +185,22 @@ export const PlayerView = () => {
       <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-3 sm:p-4 max-w-md mx-auto font-sans">
         <PlayerHeader />
 
-        {/* Emojis Box */}
+        {/* Emojis / Photo Box */}
         <div className="bg-white border-2 border-[#00A8B5]/30 rounded-2xl p-4 text-center mb-3 shadow-md">
-          <div className="text-4xl sm:text-5xl tracking-widest my-1 select-none">
-            {currentQ.emojis}
-          </div>
+          {currentQ.photoUrl || currentQ.image ? (
+            <div className="flex flex-col items-center">
+              <img
+                src={currentQ.photoUrl || currentQ.image}
+                alt={currentQ.title}
+                className="max-h-36 sm:max-h-44 w-auto object-contain rounded-xl shadow mb-1 border border-gray-200"
+              />
+              <div className="text-xl sm:text-2xl tracking-widest mt-1">{currentQ.emojis}</div>
+            </div>
+          ) : (
+            <div className="text-4xl sm:text-5xl tracking-widest my-1 select-none">
+              {currentQ.emojis}
+            </div>
+          )}
 
           {/* Timer bar */}
           <div className="w-full h-2.5 bg-gray-100 rounded-full mt-3 overflow-hidden border border-gray-200">
@@ -213,6 +224,7 @@ export const PlayerView = () => {
             return (
               <button
                 key={opt}
+                type="button"
                 onClick={() => {
                   if (isSelected) {
                     deselectOption();
@@ -220,7 +232,7 @@ export const PlayerView = () => {
                     selectOption(opt);
                   }
                 }}
-                className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all active:scale-98 ${
+                className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all active:scale-98 cursor-pointer ${
                   isSelected
                     ? 'bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white border-[#00A8B5] shadow-lg shadow-[#00A8B5]/30 font-black scale-102 ring-2 ring-[#00A8B5]/50'
                     : 'bg-white hover:bg-gray-50 border-gray-200 text-[#133842] font-bold shadow-sm'
@@ -249,15 +261,16 @@ export const PlayerView = () => {
           })}
         </div>
 
-        {/* Selected Option Pill */}
+        {/* Selected Option Pill with changeability hint */}
         <div className="text-center pt-2 min-h-8">
           {selectedOption ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00A8B5]/15 border border-[#00A8B5]/40 text-[#005F6A] text-xs font-bold animate-fade-in">
-              <Check className="w-3.5 h-3.5" />
-              <span>Marcado: {selectedOption}</span>
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#00A8B5]/15 border border-[#00A8B5]/40 text-[#005F6A] text-xs font-bold animate-fade-in shadow-sm">
+              <Check className="w-4 h-4 text-[#00A8B5]" />
+              <span>Marcada: <strong className="text-[#133842]">{selectedOption}</strong></span>
+              <span className="text-[10px] text-gray-500 font-normal ml-1">• Puedes cambiarla cuando quieras</span>
             </div>
           ) : (
-            <span className="text-xs text-gray-400 italic">Toca una opción para responder</span>
+            <span className="text-xs text-gray-500 font-medium italic">Toca una alternativa para responder (puedes cambiarla hasta el segundo 0)</span>
           )}
         </div>
       </div>
