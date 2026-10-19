@@ -168,12 +168,9 @@ export const SocketProvider = ({ children }) => {
           if (nextTime === 0) {
             clearInterval(timerRef.current);
             if (isController) {
-              // Auto reveal if timer reaches 0 from controller
-              firebaseEmojiEngine.revealAnswer(
-                prev.currentQuestion,
-                prev.doublePoints,
-                prev.timerDuration
-              );
+              // Time has expired: pause timer at 0. DO NOT auto-reveal answer!
+              // The host/admin explicitly releases the answer to build streaming suspense.
+              firebaseEmojiEngine.updateTimer(0, false);
             }
           }
 
@@ -229,7 +226,7 @@ export const SocketProvider = ({ children }) => {
   }, [player]);
 
   const selectOption = useCallback(async (option) => {
-    if (!player?.id || gameState.status !== 'QUESTION') return;
+    if (!player?.id || gameState.status !== 'QUESTION' || gameState.timeRemaining <= 0) return;
     soundEngine.play('click');
     setSelectedOption(option);
 
@@ -246,11 +243,11 @@ export const SocketProvider = ({ children }) => {
   }, [player, gameState.status, gameState.timerDuration, gameState.timeRemaining, gameState.startTime]);
 
   const deselectOption = useCallback(async () => {
-    if (!player?.id || gameState.status !== 'QUESTION') return;
+    if (!player?.id || gameState.status !== 'QUESTION' || gameState.timeRemaining <= 0) return;
     soundEngine.play('click');
     setSelectedOption(null);
     await firebaseEmojiEngine.deselectOption(player.id);
-  }, [player, gameState.status]);
+  }, [player, gameState.status, gameState.timeRemaining]);
 
   // Admin Actions
   const startLobby = useCallback(() => firebaseEmojiEngine.startLobby(), []);
@@ -301,9 +298,19 @@ export const SocketProvider = ({ children }) => {
     firebaseEmojiEngine.toggleTvOptions(gameState.showTvOptions);
   }, [gameState.showTvOptions]);
 
-  const toggleTvTitle = useCallback(() => {
-    firebaseEmojiEngine.toggleTvTitle(gameState.showTvTitle);
-  }, [gameState.showTvTitle]);
+  const toggleTvTitle = useCallback(async () => {
+    if (gameState.status === 'QUESTION') {
+      // If answer hasn't been computed yet, compute and reveal title atomically
+      await firebaseEmojiEngine.revealAnswer(
+        gameState.currentQuestion,
+        gameState.doublePoints,
+        gameState.timerDuration,
+        true
+      );
+    } else {
+      await firebaseEmojiEngine.toggleTvTitle(gameState.showTvTitle);
+    }
+  }, [gameState.status, gameState.currentQuestion, gameState.doublePoints, gameState.timerDuration, gameState.showTvTitle]);
 
   const toggleSoundMuted = useCallback(() => {
     firebaseEmojiEngine.toggleSoundMuted(gameState.soundMuted);

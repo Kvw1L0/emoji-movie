@@ -140,6 +140,9 @@ export class GameManager {
   }
 
   toggleTvTitle() {
+    if (this.status === 'QUESTION') {
+      this.revealAnswer();
+    }
     this.showTvTitle = !this.showTvTitle;
     this.broadcastState();
   }
@@ -173,7 +176,7 @@ export class GameManager {
 
       if (this.timeRemaining <= 0) {
         this.stopTimer();
-        this.revealAnswer();
+        this.broadcastState();
       }
     }, 1000);
   }

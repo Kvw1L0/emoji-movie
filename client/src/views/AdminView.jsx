@@ -315,10 +315,10 @@ export const AdminView = () => {
                       ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400'
                       : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30'
                   }`}
-                  title="Revela u oculta el nombre oficial de la película en la pantalla de TV"
+                  title="Libera la respuesta correcta en la pantalla de TV y en los teléfonos de los jugadores"
                 >
                   <Sparkles className="w-5 h-5" />
-                  <span>{gameState.showTvTitle ? 'Ocultar Título TV' : '🎬 Revelar Nombre'}</span>
+                  <span>{gameState.showTvTitle ? '🔒 Ocultar Respuesta' : '🎬 Liberar Respuesta'}</span>
                 </button>
 
                 <button

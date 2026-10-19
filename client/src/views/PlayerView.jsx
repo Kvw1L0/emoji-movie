@@ -1,8 +1,26 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/SocketContext';
-import { Check, Flame, Sparkles } from 'lucide-react';
+import { Check, Flame, Sparkles, Clock } from 'lucide-react';
 
 const AVATARS = ['🍿', '🎬', '⭐', '🕶️', '🚀', '🦁', '🦖', '👑', '🧙‍♂️', '👻', '🎸', '⚡'];
+
+// Reusable Shell at module top-level to prevent remounting and maintain input focus
+const PlayerLayout = ({ children, className = '' }) => (
+  <div className={`min-h-screen w-full relative overflow-x-hidden bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-4 font-sans ${className}`}>
+    {/* Key visual background with green globes */}
+    <div 
+      className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-90"
+      style={{ backgroundImage: `url('/key-visual.png')` }}
+    />
+    {/* Soft atmospheric gradient to preserve high contrast and readability */}
+    <div className="fixed inset-0 bg-gradient-to-t from-white/35 via-white/10 to-white/40 pointer-events-none" />
+
+    {/* Main Content Container (Mobile-first, max-w-md, perfectly centered) */}
+    <div className="relative z-10 w-full max-w-md mx-auto flex-1 flex flex-col justify-between my-auto py-2">
+      {children}
+    </div>
+  </div>
+);
 
 export const PlayerView = () => {
   const {
@@ -32,24 +50,6 @@ export const PlayerView = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Reusable Shell with official Key Visual background (Green balloons / visual identity)
-  const PlayerLayout = ({ children, className = '' }) => (
-    <div className={`min-h-screen w-full relative overflow-x-hidden bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-4 font-sans ${className}`}>
-      {/* Key visual background with green globes */}
-      <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-90"
-        style={{ backgroundImage: `url('/key-visual.png')` }}
-      />
-      {/* Soft atmospheric gradient to preserve high contrast and readability */}
-      <div className="fixed inset-0 bg-gradient-to-t from-white/35 via-white/10 to-white/40 pointer-events-none" />
-
-      {/* Main Content Container (Mobile-first, max-w-md, perfectly centered) */}
-      <div className="relative z-10 w-full max-w-md mx-auto flex-1 flex flex-col justify-between my-auto py-2">
-        {children}
-      </div>
-    </div>
-  );
 
   // 1. JOIN FORM (First time or when editing profile)
   if (!player || isEditingProfile) {
@@ -141,8 +141,8 @@ export const PlayerView = () => {
     );
   }
 
-  // 3. QUESTION PHASE (No top header, solid emojis/photo, large tactile options)
-  if (gameState.status === 'QUESTION' && currentQ) {
+  // 3. ACTIVE QUESTION PHASE (Timer > 0: user can select / change alternatives)
+  if (gameState.status === 'QUESTION' && gameState.timeRemaining > 0 && currentQ) {
     const isLowTime = gameState.timeRemaining <= 5;
 
     return (
@@ -241,9 +241,88 @@ export const PlayerView = () => {
     );
   }
 
-  // 4. REVEAL STATE (Result + "Respuesta correcta: [Título]")
-  if (gameState.status === 'REVEAL' && currentQ) {
-    const lastAns = player.lastAnswer;
+  // 4. TIME FINISHED / WAITING FOR ADMIN TO LIBERATE ANSWER
+  // When timer reaches 0 or reveal is triggered, NO verdict or correct answer is shown until showTvTitle is true!
+  const isWaitingForAdminReveal = 
+    ((gameState.status === 'QUESTION' && gameState.timeRemaining === 0) || 
+     (gameState.status === 'REVEAL' && !gameState.showTvTitle)) && Boolean(currentQ);
+
+  if (isWaitingForAdminReveal) {
+    const markedAnswer = selectedOption || player?.lastAnswer?.option;
+
+    return (
+      <PlayerLayout>
+        {/* Emojis / Photo Card with Time Finished Badge */}
+        <div className="bg-white/95 backdrop-blur-md border-2 border-[#00A8B5]/35 rounded-3xl p-4 sm:p-5 text-center mb-3 shadow-[0_15px_35px_rgba(0,95,106,0.12)]">
+          {currentQ.photoUrl || currentQ.image ? (
+            <div className="flex flex-col items-center">
+              <img
+                src={currentQ.photoUrl || currentQ.image}
+                alt={currentQ.title}
+                className="max-h-36 sm:max-h-44 w-auto object-contain rounded-2xl shadow-md mb-2 border-2 border-white"
+              />
+              <div className="text-2xl sm:text-3xl tracking-widest mt-1 select-none">{currentQ.emojis}</div>
+            </div>
+          ) : (
+            <div className="text-5xl sm:text-6xl tracking-widest my-2 select-none filter drop-shadow-sm">
+              {currentQ.emojis}
+            </div>
+          )}
+
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-xs font-black uppercase tracking-wider mt-3 shadow-sm">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <span>Tiempo Terminado</span>
+          </div>
+        </div>
+
+        {/* Registered Answer Card (No spoilers, locked) */}
+        <div className="my-auto space-y-3 w-full">
+          {markedAnswer ? (
+            <div className="bg-white/95 backdrop-blur-md border-2 border-[#00A8B5]/40 rounded-3xl p-5 text-center shadow-lg">
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1.5">
+                Tu alternativa marcada
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-[#133842] font-display">
+                {markedAnswer}
+              </div>
+              <div className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-[#005F6A] bg-[#00A8B5]/10 px-3.5 py-1 rounded-full border border-[#00A8B5]/20">
+                <Check className="w-3.5 h-3.5 text-[#00A8B5]" />
+                <span>Respuesta registrada</span>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white/95 backdrop-blur-md border border-gray-300 rounded-3xl p-5 text-center shadow-md">
+              <span className="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">
+                Tu alternativa
+              </span>
+              <div className="text-sm font-bold text-gray-500">
+                No alcanzaste a marcar una opción a tiempo
+              </div>
+            </div>
+          )}
+
+          {/* Suspense Indicator waiting for Admin to release answer */}
+          <div className="bg-white/90 backdrop-blur-md border border-[#00A8B5]/25 p-4 rounded-2xl text-center shadow-sm flex items-center justify-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00A8B5] animate-ping" />
+            <span className="text-xs sm:text-sm font-bold text-[#005F6A]">
+              Esperando que el conductor revele la respuesta...
+            </span>
+          </div>
+        </div>
+
+        <div className="text-center pt-2 min-h-8">
+          <span className="text-[11px] text-gray-500 bg-white/70 px-3 py-1 rounded-full backdrop-blur-sm font-medium">
+            Atento a la pantalla de transmisión
+          </span>
+        </div>
+      </PlayerLayout>
+    );
+  }
+
+  // 5. REVEAL STATE (Result + "Respuesta correcta: [Título]")
+  // ONLY displayed when Admin explicitly releases the answer (showTvTitle = true)
+  if (gameState.status === 'REVEAL' && gameState.showTvTitle && currentQ) {
+    const lastAns = player?.lastAnswer;
     const isCorrect = lastAns?.isCorrect;
 
     return (
@@ -293,7 +372,7 @@ export const PlayerView = () => {
               )}
               <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-black text-[#133842]">
                 <span>Total Ronda:</span>
-                <span className="font-mono text-emerald-600">+{lastAns?.pointsEarned} pts</span>
+                <span className="font-mono text-emerald-600">+{lastAns?.pointsEarned || 1000} pts</span>
               </div>
             </div>
           )}

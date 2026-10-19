@@ -154,7 +154,7 @@ export class FirebaseEmojiEngine {
     });
   }
 
-  async revealAnswer(currentQuestion, doublePoints = false, timerDuration = 20) {
+  async revealAnswer(currentQuestion, doublePoints = false, timerDuration = 20, showTvTitle = false) {
     if (!this.db || !currentQuestion) return;
 
     // Get current answers and players
@@ -216,7 +216,7 @@ export class FirebaseEmojiEngine {
     await update(ref(this.db, 'emoji_movie/state'), {
       status: 'REVEAL',
       isTimerRunning: false,
-      showTvTitle: false,
+      showTvTitle: Boolean(showTvTitle),
       voteDistribution: distribution,
       updatedAt: Date.now()
     });

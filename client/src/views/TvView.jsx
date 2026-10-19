@@ -272,7 +272,7 @@ export const TvView = () => {
                 const letters = ['A', 'B', 'C', 'D'];
                 const count = gameState.voteDistribution?.[opt] || 0;
                 const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-                const isCorrect = isReveal && isAnswerCorrect(opt, currentQ);
+                const isCorrect = isReveal && Boolean(gameState.showTvTitle) && isAnswerCorrect(opt, currentQ);
                 const isSuspense = Boolean(gameState.suspenseMode) && !isReveal;
                 const isTop2 = isSuspense && top2Options.includes(opt);
                 const isDimmed = isSuspense && !top2Options.includes(opt);
