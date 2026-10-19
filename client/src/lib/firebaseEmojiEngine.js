@@ -1,6 +1,6 @@
 import { database } from './firebase.js';
 import { ref, set, get, onValue, update, remove } from 'firebase/database';
-import { DEFAULT_MOVIES } from '../data/moviesData.js';
+import { DEFAULT_MOVIES, isAnswerCorrect } from '../data/moviesData.js';
 
 export class FirebaseEmojiEngine {
   constructor() {
@@ -158,7 +158,7 @@ export class FirebaseEmojiEngine {
 
     const answers = answersSnap.val() || {};
     const players = playersSnap.val() || {};
-    const correctTitle = currentQuestion.title;
+    const correctTitle = currentQuestion.correctAnswer || currentQuestion.title;
     const multiplier = doublePoints ? 2 : 1;
 
     const distribution = {};
@@ -174,7 +174,7 @@ export class FirebaseEmojiEngine {
         distribution[pAnswer.option] += 1;
       }
 
-      const isCorrect = pAnswer?.option === correctTitle;
+      const isCorrect = isAnswerCorrect(pAnswer?.option, currentQuestion);
       let newScore = pData.score || 0;
       let newStreak = isCorrect ? (pData.streak || 0) + 1 : 0;
       let pointsEarned = 0;

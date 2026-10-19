@@ -136,18 +136,27 @@ export const SocketProvider = ({ children }) => {
             soundEngine.play('timer_tick');
           }
 
+          const isController = typeof window !== 'undefined' && (
+            window.location.pathname.includes('/admin') ||
+            window.location.search.includes('view=admin') ||
+            window.location.pathname.includes('/tv') ||
+            window.location.search.includes('view=tv')
+          );
+
           if (nextTime === 0) {
             clearInterval(timerRef.current);
-            // Auto reveal if timer reaches 0
-            firebaseEmojiEngine.revealAnswer(
-              prev.currentQuestion,
-              prev.doublePoints,
-              prev.timerDuration
-            );
+            if (isController) {
+              // Auto reveal if timer reaches 0 from controller
+              firebaseEmojiEngine.revealAnswer(
+                prev.currentQuestion,
+                prev.doublePoints,
+                prev.timerDuration
+              );
+            }
           }
 
-          // Sync timer every 3 seconds to keep clients in harmony
-          if (nextTime % 3 === 0) {
+          // Sync timer every 3 seconds to keep clients in harmony (controllers only)
+          if (isController && nextTime > 0 && nextTime % 3 === 0) {
             firebaseEmojiEngine.updateTimer(nextTime, true);
           }
 

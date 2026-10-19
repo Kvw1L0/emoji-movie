@@ -57,7 +57,7 @@ export function App() {
 
   return (
     <SocketProvider>
-      <div className="min-h-screen bg-[#07090e] text-white flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col font-sans selection:bg-[#00A8B5] selection:text-white">
         {/* Isolated Screens: NO global navbar */}
         <main className="flex-1 w-full">
           {view === 'tv' && <TvView />}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/SocketContext';
-import { Check, Flame, Edit2 } from 'lucide-react';
+import { Check, Flame, Edit2, Sparkles, Trophy } from 'lucide-react';
 
 const AVATARS = ['🍿', '🎬', '⭐', '🕶️', '🚀', '🦁', '🦖', '👑', '🧙‍♂️', '👻', '🎸', '⚡'];
 
@@ -36,13 +36,21 @@ export const PlayerView = () => {
   // 1. JOIN FORM (First time or when editing profile)
   if (!player || isEditingProfile) {
     return (
-      <div className="min-h-[calc(100vh-50px)] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-[#131722]/95 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl text-center">
-          <div className="text-4xl mb-2">{selectedAvatar}</div>
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex items-center justify-center p-4 font-sans">
+        <div className="w-full max-w-sm bg-white rounded-3xl p-6 sm:p-7 shadow-[0_15px_35px_rgba(0,95,106,0.12)] border border-[#00A8B5]/25 text-center">
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#00A8B5]/10 text-[#005F6A] text-xs font-bold uppercase tracking-wider mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Hogar de Cristo • 82 Años</span>
+          </div>
 
-          <h2 className="text-2xl font-black text-white font-display mb-4">
-            EMOJI MOVIE
+          <div className="text-5xl mb-2">{selectedAvatar}</div>
+
+          <h2 className="text-2xl font-black text-[#133842] font-display mb-1">
+            EMOJI <span className="text-[#00A8B5]">MOVIE</span>
           </h2>
+          <p className="text-xs text-gray-500 mb-5 font-medium">
+            Elige tu avatar y escribe tu nombre
+          </p>
 
           <form onSubmit={handleJoin} className="space-y-4 text-left">
             <div>
@@ -54,8 +62,8 @@ export const PlayerView = () => {
                     onClick={() => setSelectedAvatar(av)}
                     className={`h-11 rounded-xl text-xl flex items-center justify-center transition-all ${
                       selectedAvatar === av
-                        ? 'bg-yellow-400 scale-105 shadow-md shadow-yellow-400/30 border-2 border-white'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                        ? 'bg-[#00A8B5] text-white scale-105 shadow-md shadow-[#00A8B5]/30 border-2 border-white ring-2 ring-[#00A8B5]'
+                        : 'bg-[#FAF7F2] hover:bg-gray-100 border border-[#00A8B5]/15'
                     }`}
                   >
                     {av}
@@ -71,15 +79,15 @@ export const PlayerView = () => {
                 maxLength={18}
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
-                placeholder={player?.nickname || "Tu apodo o nombre"}
-                className="w-full px-4 py-3 bg-black/60 border border-white/15 rounded-xl text-white placeholder-gray-500 font-bold text-sm focus:outline-none focus:border-yellow-400 transition"
+                placeholder={player?.nickname || "Tu nombre o apodo"}
+                className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#00A8B5]/30 rounded-xl text-[#133842] placeholder-gray-400 font-bold text-sm focus:outline-none focus:border-[#00A8B5] focus:ring-2 focus:ring-[#00A8B5]/20 transition"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-300 text-black font-black text-base shadow-lg shadow-yellow-400/25 hover:opacity-95 active:scale-98 transition disabled:opacity-50"
+              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white font-black text-base shadow-lg shadow-[#00A8B5]/25 hover:opacity-95 active:scale-98 transition disabled:opacity-50"
             >
               {isSubmitting ? 'Entrando...' : (player ? 'Guardar Cambios' : '¡Entrar a Jugar!')}
             </button>
@@ -88,7 +96,7 @@ export const PlayerView = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingProfile(false)}
-                className="w-full py-2 text-xs text-gray-400 hover:text-white"
+                className="w-full py-2 text-xs text-gray-500 hover:text-gray-800 font-medium"
               >
                 Cancelar
               </button>
@@ -101,12 +109,12 @@ export const PlayerView = () => {
 
   // 2. PLAYER STATUS BAR
   const PlayerHeader = () => (
-    <div className="w-full max-w-md mx-auto mb-3 flex items-center justify-between p-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-      <div className="flex items-center gap-2">
+    <div className="w-full max-w-md mx-auto mb-3 flex items-center justify-between p-3 rounded-2xl bg-white border border-[#00A8B5]/20 shadow-sm">
+      <div className="flex items-center gap-2.5">
         <span className="text-2xl">{player.avatar}</span>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-black text-white leading-tight">
+            <span className="text-sm font-black text-[#133842] leading-tight">
               {player.nickname}
             </span>
             <button
@@ -115,29 +123,29 @@ export const PlayerView = () => {
                 setSelectedAvatar(player.avatar);
                 setIsEditingProfile(true);
               }}
-              className="text-gray-400 hover:text-white p-0.5"
+              className="text-gray-400 hover:text-[#00A8B5] p-0.5"
               title="Cambiar apodo o avatar"
             >
               <Edit2 className="w-3 h-3" />
             </button>
           </div>
-          <div className="text-[11px] text-gray-400">
+          <div className="text-[11px] text-[#005F6A] font-semibold">
             {gameState.allPlayers?.findIndex(p => p.id === player.id) + 1 ? (
               <span>#{gameState.allPlayers.findIndex(p => p.id === player.id) + 1} en el ranking</span>
-            ) : 'Conectado'}
+            ) : 'En sala'}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         {player.streak > 1 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold font-mono">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-100 text-red-700 text-xs font-bold font-mono">
             <Flame className="w-3.5 h-3.5 fill-current" />
             <span>x{player.streak}</span>
           </div>
         )}
         <div className="text-right">
-          <div className="text-sm font-black font-mono text-yellow-400">
+          <div className="text-sm font-black font-mono text-[#005F6A]">
             {(player.score || 0).toLocaleString()} <span className="text-[10px] text-gray-400 font-normal">pts</span>
           </div>
         </div>
@@ -148,16 +156,19 @@ export const PlayerView = () => {
   // 3. LOBBY STATE
   if (gameState.status === 'LOBBY') {
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-4 max-w-md mx-auto font-sans">
         <PlayerHeader />
 
-        <div className="my-auto text-center space-y-3 bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-md">
+        <div className="my-auto text-center space-y-3 bg-white border border-[#00A8B5]/20 p-7 rounded-3xl shadow-[0_10px_30px_rgba(0,95,106,0.08)]">
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#00A8B5]/10 text-[#005F6A] text-xs font-bold uppercase tracking-wider mb-1">
+            <span>Hogar de Cristo • 82 Años</span>
+          </div>
           <div className="text-5xl animate-bounce-subtle">🍿</div>
-          <h2 className="text-2xl font-black text-white font-display">
+          <h2 className="text-2xl font-black text-[#133842] font-display">
             ¡Estás en la Sala!
           </h2>
-          <p className="text-gray-400 text-sm">
-            Atento a la pantalla gigante para la primera película.
+          <p className="text-gray-500 text-xs sm:text-sm">
+            Atento a la pantalla de la transmisión para ver la primera película.
           </p>
         </div>
 
@@ -171,20 +182,20 @@ export const PlayerView = () => {
     const isLowTime = gameState.timeRemaining <= 5;
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-3 sm:p-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-3 sm:p-4 max-w-md mx-auto font-sans">
         <PlayerHeader />
 
         {/* Emojis Box */}
-        <div className="bg-black/70 border border-yellow-400/40 rounded-2xl p-4 text-center mb-3 shadow-lg">
+        <div className="bg-white border-2 border-[#00A8B5]/30 rounded-2xl p-4 text-center mb-3 shadow-md">
           <div className="text-4xl sm:text-5xl tracking-widest my-1 select-none">
             {currentQ.emojis}
           </div>
 
           {/* Timer bar */}
-          <div className="w-full h-2 bg-white/10 rounded-full mt-3 overflow-hidden">
+          <div className="w-full h-2.5 bg-gray-100 rounded-full mt-3 overflow-hidden border border-gray-200">
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                isLowTime ? 'bg-red-500' : 'bg-yellow-400'
+                isLowTime ? 'bg-red-500' : 'bg-gradient-to-r from-[#00A8B5] to-[#D4AF37]'
               }`}
               style={{
                 width: `${Math.max(0, (gameState.timeRemaining / gameState.timerDuration) * 100)}%`
@@ -211,13 +222,13 @@ export const PlayerView = () => {
                 }}
                 className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all active:scale-98 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-yellow-400 to-amber-300 text-black border-white shadow-xl shadow-yellow-400/30 font-black scale-102 ring-2 ring-yellow-300'
-                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-white font-bold'
+                    ? 'bg-gradient-to-r from-[#00A8B5] to-[#008B9B] text-white border-[#00A8B5] shadow-lg shadow-[#00A8B5]/30 font-black scale-102 ring-2 ring-[#00A8B5]/50'
+                    : 'bg-white hover:bg-gray-50 border-gray-200 text-[#133842] font-bold shadow-sm'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
-                    isSelected ? 'bg-black text-yellow-400' : 'bg-white/10 text-gray-300'
+                    isSelected ? 'bg-white text-[#00A8B5]' : 'bg-[#FAF7F2] text-[#005F6A] border border-[#00A8B5]/20'
                   }`}>
                     {letters[idx]}
                   </span>
@@ -227,11 +238,11 @@ export const PlayerView = () => {
                 </div>
 
                 {isSelected ? (
-                  <div className="w-6 h-6 rounded-full bg-black text-yellow-400 flex items-center justify-center text-xs font-bold">
+                  <div className="w-6 h-6 rounded-full bg-white text-[#00A8B5] flex items-center justify-center text-xs font-bold">
                     <Check className="w-4 h-4 stroke-[3]" />
                   </div>
                 ) : (
-                  <div className="w-6 h-6 rounded-full border border-white/20" />
+                  <div className="w-6 h-6 rounded-full border border-gray-300" />
                 )}
               </button>
             );
@@ -240,11 +251,13 @@ export const PlayerView = () => {
 
         {/* Selected Option Pill */}
         <div className="text-center pt-2 min-h-8">
-          {selectedOption && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold animate-fade-in">
+          {selectedOption ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00A8B5]/15 border border-[#00A8B5]/40 text-[#005F6A] text-xs font-bold animate-fade-in">
               <Check className="w-3.5 h-3.5" />
               <span>Marcado: {selectedOption}</span>
             </div>
+          ) : (
+            <span className="text-xs text-gray-400 italic">Toca una opción para responder</span>
           )}
         </div>
       </div>
@@ -257,49 +270,49 @@ export const PlayerView = () => {
     const isCorrect = lastAns?.isCorrect;
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-4 max-w-md mx-auto font-sans">
         <PlayerHeader />
 
-        <div className={`my-auto text-center p-6 sm:p-8 rounded-3xl border backdrop-blur-xl shadow-2xl ${
+        <div className={`my-auto text-center p-6 sm:p-8 rounded-3xl border shadow-xl ${
           isCorrect
-            ? 'bg-emerald-950/40 border-emerald-500/60 shadow-emerald-500/20'
-            : 'bg-red-950/40 border-red-500/50 shadow-red-500/20'
+            ? 'bg-white border-emerald-500 shadow-emerald-500/10'
+            : 'bg-white border-red-400 shadow-red-500/10'
         }`}>
           <div className="text-5xl mb-2">
             {isCorrect ? '🎉' : '💔'}
           </div>
 
           <h2 className={`text-3xl font-black font-display mb-1 ${
-            isCorrect ? 'text-emerald-300' : 'text-red-300'
+            isCorrect ? 'text-emerald-600' : 'text-red-600'
           }`}>
             {isCorrect ? '¡CORRECTO!' : '¡INCORRECTO!'}
           </h2>
 
-          <p className="text-xs text-gray-400 mb-4 font-semibold">
-            Era: <span className="text-white font-black text-base">{currentQ.title}</span>
+          <p className="text-xs text-gray-500 mb-4 font-semibold">
+            Era: <span className="text-[#133842] font-black text-base">{currentQ.correctAnswer || currentQ.title}</span>
           </p>
 
           {isCorrect && (
-            <div className="bg-black/50 border border-emerald-500/30 p-3.5 rounded-2xl space-y-1.5 text-xs text-left">
-              <div className="flex justify-between items-center text-gray-300">
+            <div className="bg-[#FAF7F2] border border-emerald-500/30 p-3.5 rounded-2xl space-y-1.5 text-xs text-left">
+              <div className="flex justify-between items-center text-gray-600">
                 <span>Puntos Base:</span>
-                <span className="font-mono text-emerald-300 font-bold">+1.000</span>
+                <span className="font-mono text-emerald-600 font-bold">+1.000</span>
               </div>
               {lastAns?.speedBonus > 0 && (
-                <div className="flex justify-between items-center text-gray-300">
-                  <span>Bono de Velocidad:</span>
-                  <span className="font-mono text-yellow-400 font-bold">+{lastAns.speedBonus}</span>
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>Bono de Rapidez:</span>
+                  <span className="font-mono text-[#D4AF37] font-bold">+{lastAns.speedBonus}</span>
                 </div>
               )}
               {gameState.doublePoints && (
-                <div className="flex justify-between items-center text-red-400 font-bold">
+                <div className="flex justify-between items-center text-red-600 font-bold">
                   <span>Multiplicador:</span>
                   <span>x2 🔥</span>
                 </div>
               )}
-              <div className="pt-2 border-t border-white/10 flex justify-between items-center text-sm font-black text-white">
+              <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-black text-[#133842]">
                 <span>Total Ronda:</span>
-                <span className="font-mono text-emerald-300">+{lastAns?.pointsEarned} pts</span>
+                <span className="font-mono text-emerald-600">+{lastAns?.pointsEarned} pts</span>
               </div>
             </div>
           )}
@@ -316,23 +329,23 @@ export const PlayerView = () => {
     const playerRank = (gameState.allPlayers?.findIndex(p => p.id === player.id) || 0) + 1;
 
     return (
-      <div className="min-h-[calc(100vh-60px)] flex flex-col justify-between p-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#133842] flex flex-col justify-between p-4 max-w-md mx-auto font-sans">
         <PlayerHeader />
 
-        <div className="my-auto text-center p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
+        <div className="my-auto text-center p-6 rounded-3xl bg-white border border-[#00A8B5]/25 shadow-xl space-y-4">
           <div className="text-5xl animate-bounce-subtle">
             {isPodium ? '🏆' : '📊'}
           </div>
 
-          <h2 className="text-2xl font-black text-white font-display">
-            {isPodium ? '¡Fin del Juego!' : 'Tu Posición'}
+          <h2 className="text-2xl font-black text-[#133842] font-display">
+            {isPodium ? '¡Fin de la Partida!' : 'Tu Posición Actual'}
           </h2>
 
-          <div className="p-4 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
-            <div className="text-5xl font-black text-white font-mono">
+          <div className="p-4 rounded-2xl bg-[#00A8B5]/10 border border-[#00A8B5]/30">
+            <div className="text-5xl font-black text-[#005F6A] font-mono">
               #{playerRank}
             </div>
-            <div className="text-sm font-black text-yellow-400 font-mono mt-1">
+            <div className="text-sm font-black text-[#D4AF37] font-mono mt-1">
               {(player.score || 0).toLocaleString()} pts
             </div>
           </div>

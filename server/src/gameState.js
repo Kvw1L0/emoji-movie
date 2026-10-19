@@ -1,4 +1,4 @@
-import { DEFAULT_MOVIES } from './moviesData.js';
+import { DEFAULT_MOVIES, isAnswerCorrect } from './moviesData.js';
 
 export class GameManager {
   constructor(io) {
@@ -174,7 +174,7 @@ export class GameManager {
     // Calculate scores for all players
     for (const [playerId, player] of this.players.entries()) {
       const answer = this.currentAnswers.get(playerId);
-      const isCorrect = answer && answer.option === correctTitle;
+      const isCorrect = isAnswerCorrect(answer?.option, currentQ);
 
       if (isCorrect) {
         const basePoints = 1000;

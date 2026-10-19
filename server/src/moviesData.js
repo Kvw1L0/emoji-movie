@@ -2,6 +2,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-1",
     title: "Titanic",
+    correctAnswer: "Titanic",
     emojis: "🚢 🧊 💔 🎻 🌊",
     options: ["Titanic", "Poseidón", "Náufrago", "La Aventura del Poseidón"],
     category: "Clásicos",
@@ -15,6 +16,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-2",
     title: "El Rey León",
+    correctAnswer: "El Rey León",
     emojis: "🦁 👑 🌅 🐗 🦝",
     options: ["El Rey León", "Madagascar", "Tarzán", "El Libro de la Selva"],
     category: "Animación",
@@ -28,6 +30,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-3",
     title: "Jurassic Park",
+    correctAnswer: "Jurassic Park",
     emojis: "🦖 🌴 🚙 🧬 ⚡",
     options: ["Jurassic Park", "King Kong", "Godzilla", "Viaje al Centro de la Tierra"],
     category: "Acción & Ciencia Ficción",
@@ -41,6 +44,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-4",
     title: "The Matrix",
+    correctAnswer: "The Matrix",
     emojis: "🕶️ 💊 🐇 💻 🥋",
     options: ["The Matrix", "Inception", "Blade Runner", "Tron"],
     category: "Acción & Ciencia Ficción",
@@ -53,7 +57,8 @@ export const DEFAULT_MOVIES = [
   },
   {
     id: "mov-5",
-    title: "Harry Potter y la Piedra Filosofal",
+    title: "Harry Potter",
+    correctAnswer: "Harry Potter",
     emojis: "⚡ 🧙‍♂️ 🦉 🏰 🚂",
     options: ["Harry Potter", "El Señor de los Anillos", "Las Crónicas de Narnia", "Percy Jackson"],
     category: "Fantasía & Aventura",
@@ -67,6 +72,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-6",
     title: "Volver al Futuro",
+    correctAnswer: "Volver al Futuro",
     emojis: "⚡ 🚗 ⏰ 🔥 🛹",
     options: ["Volver al Futuro", "El Efecto Mariposa", "Terminator", "Rápidos y Furiosos"],
     category: "Clásicos",
@@ -80,6 +86,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-7",
     title: "Los Cazafantasmas",
+    correctAnswer: "Los Cazafantasmas",
     emojis: "👻 🚫 🔫 🧪 🏙️",
     options: ["Los Cazafantasmas", "Casper", "Hombres de Negro", "Beetlejuice"],
     category: "Clásicos",
@@ -93,6 +100,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-8",
     title: "El Señor de los Anillos",
+    correctAnswer: "El Señor de los Anillos",
     emojis: "🧙‍♂️ 💍 🌋 🗡️ 🏹",
     options: ["El Señor de los Anillos", "Juego de Tronos", "Warcraft", "Eragon"],
     category: "Fantasía & Aventura",
@@ -106,6 +114,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-9",
     title: "E.T. El Extraterrestre",
+    correctAnswer: "E.T. El Extraterrestre",
     emojis: "🚲 🌕 👽 👆 🔴",
     options: ["E.T. El Extraterrestre", "Encuentros Cercanos", "Super 8", "Paul"],
     category: "Clásicos",
@@ -119,6 +128,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-10",
     title: "Forrest Gump",
+    correctAnswer: "Forrest Gump",
     emojis: "🍫 🏃 👟 🪶 🍤",
     options: ["Forrest Gump", "Náufrago", "La Terminal", "Big"],
     category: "Clásicos",
@@ -131,7 +141,8 @@ export const DEFAULT_MOVIES = [
   },
   {
     id: "mov-11",
-    title: "Up: Una aventura de altura",
+    title: "Up",
+    correctAnswer: "Up",
     emojis: "🎈 🏠 👴 👦 🐶",
     options: ["Up", "Intensa-Mente", "Monsters Inc", "Ratatouille"],
     category: "Animación",
@@ -145,6 +156,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-12",
     title: "Mi Pobre Angelito",
+    correctAnswer: "Mi Pobre Angelito",
     emojis: "🏠 🎄 👦 🔨 🕷️",
     options: ["Mi Pobre Angelito", "Daniel el Travieso", "Un Detective Suelto en Hollywood", "Bebé de Compras"],
     category: "Comedia & Drama",
@@ -158,6 +170,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-13",
     title: "Spider-Man",
+    correctAnswer: "Spider-Man",
     emojis: "🕷️ 🕸️ 🏙️ 📸 🧪",
     options: ["Spider-Man", "Batman", "Daredevil", "Deadpool"],
     category: "Acción & Ciencia Ficción",
@@ -170,7 +183,8 @@ export const DEFAULT_MOVIES = [
   },
   {
     id: "mov-14",
-    title: "Terminator 2: El Juicio Final",
+    title: "Terminator 2",
+    correctAnswer: "Terminator 2",
     emojis: "🤖 🕶️ 🏍️ ⏳ 🦾",
     options: ["Terminator 2", "RoboCop", "Yo, Robot", "Total Recall"],
     category: "Acción & Ciencia Ficción",
@@ -184,6 +198,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-15",
     title: "Piratas del Caribe",
+    correctAnswer: "Piratas del Caribe",
     emojis: "🏴‍☠️ ⚓ 🧭 🦜 💀",
     options: ["Piratas del Caribe", "La Isla del Tesoro", "Capitán Phillips", "Peter Pan"],
     category: "Fantasía & Aventura",
@@ -197,6 +212,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-16",
     title: "Toy Story",
+    correctAnswer: "Toy Story",
     emojis: "🤠 🚀 🧸 🦖 📦",
     options: ["Toy Story", "Bichos", "Small Soldiers", "Lego Movie"],
     category: "Animación",
@@ -210,6 +226,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-17",
     title: "El Resplandor",
+    correctAnswer: "El Resplandor",
     emojis: "🪓 ❄️ 🏨 🚪 👯‍♀️",
     options: ["El Resplandor", "Psicosis", "Misery", "El Exorcista"],
     category: "Terror & Suspenso",
@@ -223,6 +240,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-18",
     title: "Pulp Fiction",
+    correctAnswer: "Pulp Fiction",
     emojis: "🕺 💃 🍔 🔫 💼",
     options: ["Pulp Fiction", "Perros de la Calle", "Scarface", "Buenos Muchachos"],
     category: "Clásicos",
@@ -236,6 +254,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-19",
     title: "Coco",
+    correctAnswer: "Coco",
     emojis: "🎸 💀 🏵️ 👞 🕯️",
     options: ["Coco", "El Libro de la Vida", "Encanto", "Kubo"],
     category: "Animación",
@@ -249,6 +268,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-20",
     title: "El Origen (Inception)",
+    correctAnswer: "El Origen (Inception)",
     emojis: "🌀 💤 🏙️ ⏳ 🚆",
     options: ["El Origen (Inception)", "Interestelar", "Tenet", "Memento"],
     category: "Acción & Ciencia Ficción",
@@ -262,6 +282,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-21",
     title: "Tiburón (Jaws)",
+    correctAnswer: "Tiburón (Jaws)",
     emojis: "🦈 🚤 🏖️ 🩸 🏊",
     options: ["Tiburón (Jaws)", "Piraña", "Megalodón", "Deep Blue Sea"],
     category: "Terror & Suspenso",
@@ -274,7 +295,8 @@ export const DEFAULT_MOVIES = [
   },
   {
     id: "mov-22",
-    title: "Star Wars: Una Nueva Esperanza",
+    title: "Star Wars",
+    correctAnswer: "Star Wars",
     emojis: "⚔️ 🌌 🤖 🪐 🛸",
     options: ["Star Wars", "Star Trek", "Guardianes de la Galaxia", "Dune"],
     category: "Acción & Ciencia Ficción",
@@ -288,6 +310,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-23",
     title: "Gladiador",
+    correctAnswer: "Gladiador",
     emojis: "⚔️ 🛡️ 🏟️ 🐅 👑",
     options: ["Gladiador", "Troya", "300", "Espartaco"],
     category: "Clásicos",
@@ -301,6 +324,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-24",
     title: "Buscando a Nemo",
+    correctAnswer: "Buscando a Nemo",
     emojis: "🐠 🌊 🦈 🦷 🤿",
     options: ["Buscando a Nemo", "El Espantatiburones", "La Sirenita", "Atlantis"],
     category: "Animación",
@@ -314,6 +338,7 @@ export const DEFAULT_MOVIES = [
   {
     id: "mov-25",
     title: "Avengers: Endgame",
+    correctAnswer: "Avengers: Endgame",
     emojis: "🧤 💎 ⚡ 🛡️ ⏳",
     options: ["Avengers: Endgame", "Liga de la Justicia", "X-Men", "Transformers"],
     category: "Acción & Ciencia Ficción",
@@ -325,3 +350,24 @@ export const DEFAULT_MOVIES = [
     trivia: "Culminación de más de 20 películas entrelazadas del Universo Cinematográfico de Marvel."
   }
 ];
+
+export function isAnswerCorrect(playerAnswer, question) {
+  if (!playerAnswer || !question) return false;
+  const clean = (s) => (s || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+  const pClean = clean(playerAnswer);
+  const targetClean = clean(question.correctAnswer || question.title);
+  const titleClean = clean(question.title);
+
+  if (pClean === targetClean || pClean === titleClean) return true;
+  if (pClean.length >= 3 && (targetClean.startsWith(pClean) || pClean.startsWith(targetClean))) return true;
+  if (pClean.length >= 3 && (titleClean.startsWith(pClean) || pClean.startsWith(titleClean))) return true;
+
+  return false;
+}
